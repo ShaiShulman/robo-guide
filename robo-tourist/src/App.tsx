@@ -21,8 +21,13 @@ function App() {
         <PromptForm
           onNewSuggestions={(suggestions) => setPlaces(suggestions)}
         />
-        <List places={markers} map={MapsApi} />
-        <Map placeNames={places} onMapLoaded={handleMapLoaded} />
+        <div className="container">
+          <List places={markers} map={MapsApi} />
+
+          <div className="map-section">
+            <Map placeNames={places} onMapLoaded={handleMapLoaded} />
+          </div>
+        </div>
       </main>
     </div>
   );

@@ -29,13 +29,13 @@ const List: React.FC<ListProps> = ({ places, map }) => {
   }, [places]);
 
   return (
-    <div>
+    <div className="list-section">
       <ul>
         {places.map((place, index) => (
           <li key={index}>
-            <div>{place.text}</div>
-            <div>
+            <div className="list-item">
               <img src={place.imageUrl} />
+              <div className="text">{place.text}</div>
             </div>
           </li>
         ))}

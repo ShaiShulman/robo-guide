@@ -59,26 +59,24 @@ const Map: React.FC<MapProps> = ({ placeNames, onMapLoaded }) => {
   }, [placeNames, Map, Maps]);
 
   return (
-    <div style={{ height: "400px", width: "400px" }}>
-      <GoogleMapReact
-        bootstrapURLKeys={{ key: GOOGLE_MAPS_API_KEY }}
-        center={center}
-        zoom={5}
-        yesIWantToUseGoogleMapApiInternals
-        onGoogleApiLoaded={({ map, maps }) => handleApiLoaded(map, maps)}
-      >
-        {markers.map((marker, index) => {
-          return (
-            <Marker
-              key={index}
-              lat={marker.lat}
-              lng={marker.lng}
-              text={marker.text}
-            />
-          );
-        })}
-      </GoogleMapReact>
-    </div>
+    <GoogleMapReact
+      bootstrapURLKeys={{ key: GOOGLE_MAPS_API_KEY }}
+      center={center}
+      zoom={5}
+      yesIWantToUseGoogleMapApiInternals
+      onGoogleApiLoaded={({ map, maps }) => handleApiLoaded(map, maps)}
+    >
+      {markers.map((marker, index) => {
+        return (
+          <Marker
+            key={index}
+            lat={marker.lat}
+            lng={marker.lng}
+            text={marker.text}
+          />
+        );
+      })}
+    </GoogleMapReact>
   );
 };
 
