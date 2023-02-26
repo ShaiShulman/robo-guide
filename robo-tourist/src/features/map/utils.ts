@@ -1,3 +1,5 @@
+import { GoogleMap } from "@react-google-maps/api";
+
 import { Coord } from "./interfaces";
 import { GOOGLE_MAPS_API_KEY } from "./const";
 
@@ -37,8 +39,8 @@ export async function getPhoto(placeId, map) {
           place.photos &&
           place.photos.length
         ) {
-          const photoReference = (place.photos[0] as any).photo_reference;
-          const photoUrl = `https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=${photoReference}&key=${GOOGLE_MAPS_API_KEY}`;
+          const photoUrl = (place.photos[0] as any).getUrl();
+          // const photoUrl = `https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=${photoReference}&key=${GOOGLE_MAPS_API_KEY}`;
           resolve(photoUrl);
         } else {
           reject(new Error("No photo found for this place."));

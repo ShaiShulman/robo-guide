@@ -2,7 +2,7 @@ import { useState } from "react";
 import { getSuggestions } from "../suggestions/openai";
 
 interface PromptFormProps {
-  onNewSuggestions: (suggestions: string[]) => void;
+  onNewSuggestions: (suggestions: string[], target: string) => void;
 }
 
 const PromptForm: React.FC<PromptFormProps> = (props) => {
@@ -14,10 +14,7 @@ const PromptForm: React.FC<PromptFormProps> = (props) => {
     getSuggestions(
       `I'm visiting ${prompt}, I'm 41 and I don't like museums. Give me 10 recommendations what to visit`
     ).then((result) => {
-      if (result)
-        props.onNewSuggestions(
-          result.split(",").map((place) => `${place}, ${prompt}`)
-        );
+      if (result) props.onNewSuggestions(result.split(","), prompt);
     });
   };
   return (

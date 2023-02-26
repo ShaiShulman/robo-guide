@@ -1,32 +1,66 @@
 import { useEffect, useState } from "react";
-import GoogleMapReact from "google-map-react";
 import { getBounds, getPlace } from "./utils";
 import { Coord, MarkerProps } from "./interfaces";
-import Marker from "./Marker";
+import { Marker } from "@react-google-maps/api";
 import { GOOGLE_MAPS_API_KEY } from "./const";
+import { GoogleMap, LoadScript, useJsApiLoader } from "@react-google-maps/api";
+import React from "react";
+import { Spinner } from "react-bootstrap";
 
 interface MapProps {
   placeNames: string[];
-  onMapLoaded: (places: MarkerProps[], MapsApi: any) => void;
+  targetName: string;
+  onMapLoaded: (places: MarkerProps[], Map: any) => void;
 }
 
-const Map: React.FC<MapProps> = ({ placeNames, onMapLoaded }) => {
+const Map: React.FC<MapProps> = ({ placeNames, targetName, onMapLoaded }) => {
   const [center, setCenter] = useState<Coord>({ lat: 0, lng: 0 });
   const [markers, setMarkers] = useState<MarkerProps[]>([]);
   const [Map, setMap] = useState(null);
   const [Maps, setMaps] = useState(null);
 
-  const handleApiLoaded = async (map, maps) => {
-    setMap(map);
-    setMaps(maps);
+  const containerStyle = {
+    width: "800px",
+    height: "400px",
+  };
+
+  const { isLoaded, loadError } = useJsApiLoader({
+    googleMapsApiKey: GOOGLE_MAPS_API_KEY,
+    libraries: ["places"],
+  });
+
+  const renderMap = () => {
+    const onLoad = (map: any) => {
+      setMap(map);
+      console.log(map);
+    };
+
+    return (
+      <GoogleMap
+        mapContainerStyle={containerStyle}
+        onLoad={onLoad}
+        center={center}
+        zoom={5}
+      >
+        {markers.map((marker, index) => {
+          return (
+            <Marker
+              key={index}
+              position={{ lat: marker.lat, lng: marker.lng }}
+              title={marker.text}
+            />
+          );
+        })}
+      </GoogleMap>
+    );
   };
 
   useEffect(() => {
-    if (placeNames.length === 0 || !Map || !Maps) return;
+    if (placeNames.length === 0 || !Map) return;
     const setMap = async () => {
-      const geocoder = new Maps.Geocoder();
+      const geocoder = new google.maps.Geocoder();
       const locations = (await Promise.allSettled(
-        placeNames.map((place) => getPlace(place, geocoder))
+        placeNames.map((place) => getPlace(`${place}, ${targetName}`, geocoder))
       )) as any[];
       const geometry = locations
         .filter((loc: any) => loc.status === "fulfilled")
@@ -53,31 +87,15 @@ const Map: React.FC<MapProps> = ({ placeNames, onMapLoaded }) => {
       setMarkers(markers);
       Map.fitBounds(getBounds(geometry));
     };
-    console.log(markers);
     setMap().catch((err) => console.error(err));
     onMapLoaded(markers, Map);
-  }, [placeNames, Map, Maps]);
+  }, [placeNames, Map]);
 
-  return (
-    <GoogleMapReact
-      bootstrapURLKeys={{ key: GOOGLE_MAPS_API_KEY }}
-      center={center}
-      zoom={5}
-      yesIWantToUseGoogleMapApiInternals
-      onGoogleApiLoaded={({ map, maps }) => handleApiLoaded(map, maps)}
-    >
-      {markers.map((marker, index) => {
-        return (
-          <Marker
-            key={index}
-            lat={marker.lat}
-            lng={marker.lng}
-            text={marker.text}
-          />
-        );
-      })}
-    </GoogleMapReact>
-  );
+  if (loadError) {
+    return <div>Error loading map.</div>;
+  }
+
+  return isLoaded ? renderMap() : <Spinner />;
 };
 
 export default Map;

@@ -17,7 +17,7 @@ const List: React.FC<ListProps> = ({ places, map }) => {
     )) as any[];
     const newMarkers = places.map((place, index) => ({
       ...place,
-      imageUrl: urls[index],
+      imageUrl: urls[index].value,
     }));
     console.log(newMarkers);
     setMarkers(newMarkers);
@@ -31,11 +31,11 @@ const List: React.FC<ListProps> = ({ places, map }) => {
   return (
     <div className="list-section">
       <ul>
-        {places.map((place, index) => (
+        {markers.map((marker, index) => (
           <li key={index}>
             <div className="list-item">
-              <img src={place.imageUrl} />
-              <div className="text">{place.text}</div>
+              <img srcSet={marker.imageUrl} />
+              <div className="text">{marker.text}</div>
             </div>
           </li>
         ))}
