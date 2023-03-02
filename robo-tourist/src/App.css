@@ -23,9 +23,16 @@
 /* Set style for list section */
 .list-section {
   display: flex;
-  flex: 1;
   overflow-y: scroll;
   padding: 10px;
+}
+
+.list-section ul {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  flex: 1 1 80px;
+  list-style: none;
 }
 
 /* Style for list items */
@@ -73,7 +80,6 @@
     width: 150px;
   }
 
-  /* Adjust size of image in list item for smaller screens */
   .list-item img {
     max-height: 100px;
     max-width: 100px;
@@ -83,4 +89,11 @@
   * {
     font-size: 14px;
   }
+}
+
+Form {
+  text-align: left;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+  padding: 20px;
 }

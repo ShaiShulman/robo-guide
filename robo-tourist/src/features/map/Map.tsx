@@ -1,9 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { getBounds, getPlace } from "./utils";
 import { Coord, MarkerProps } from "./interfaces";
 import { Marker } from "@react-google-maps/api";
 import { GOOGLE_MAPS_API_KEY } from "./const";
-import { GoogleMap, LoadScript, useJsApiLoader } from "@react-google-maps/api";
+import { GoogleMap, useJsApiLoader } from "@react-google-maps/api";
 import React from "react";
 import { Spinner } from "react-bootstrap";
 
@@ -13,6 +13,8 @@ interface MapProps {
   onMapLoaded: (places: MarkerProps[], Map: any) => void;
 }
 
+const LIBRARIES = ["places"] as any;
+
 const Map: React.FC<MapProps> = ({ placeNames, targetName, onMapLoaded }) => {
   const [center, setCenter] = useState<Coord>({ lat: 0, lng: 0 });
   const [markers, setMarkers] = useState<MarkerProps[]>([]);
@@ -21,23 +23,27 @@ const Map: React.FC<MapProps> = ({ placeNames, targetName, onMapLoaded }) => {
 
   const containerStyle = {
     width: "800px",
-    height: "400px",
+    height: "300px",
   };
+
+  const windowWidth = useRef(window.innerWidth);
 
   const { isLoaded, loadError } = useJsApiLoader({
     googleMapsApiKey: GOOGLE_MAPS_API_KEY,
-    libraries: ["places"],
+    libraries: LIBRARIES,
   });
 
   const renderMap = () => {
     const onLoad = (map: any) => {
       setMap(map);
-      console.log(map);
     };
 
     return (
       <GoogleMap
-        mapContainerStyle={containerStyle}
+        mapContainerStyle={{
+          height: "300px",
+          width: windowWidth.current,
+        }}
         onLoad={onLoad}
         center={center}
         zoom={5}
@@ -86,9 +92,9 @@ const Map: React.FC<MapProps> = ({ placeNames, targetName, onMapLoaded }) => {
       console.log(markers);
       setMarkers(markers);
       Map.fitBounds(getBounds(geometry));
+      onMapLoaded(markers, Map);
     };
     setMap().catch((err) => console.error(err));
-    onMapLoaded(markers, Map);
   }, [placeNames, Map]);
 
   if (loadError) {

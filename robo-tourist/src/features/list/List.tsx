@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { MarkerProps } from "../map/interfaces";
 import { getPhoto } from "../map/utils";
-import { getPlacePhotoUrl } from "./utils";
+import { getPlaceName, getPlacePhotoUrl } from "./utils";
 
 interface ListProps {
   places: MarkerProps[];
@@ -24,9 +24,8 @@ const List: React.FC<ListProps> = ({ places, map }) => {
   };
 
   useEffect(() => {
-    updatePhotos(places);
-    return () => {};
-  }, [places]);
+    if (map) updatePhotos(places);
+  }, [places, map]);
 
   return (
     <div className="list-section">
@@ -35,7 +34,7 @@ const List: React.FC<ListProps> = ({ places, map }) => {
           <li key={index}>
             <div className="list-item">
               <img srcSet={marker.imageUrl} />
-              <div className="text">{marker.text}</div>
+              <div className="text">{getPlaceName(marker.text)}</div>
             </div>
           </li>
         ))}
