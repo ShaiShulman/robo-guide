@@ -1,14 +1,20 @@
 import { useEffect, useState } from "react";
 import { MarkerProps } from "../map/interfaces";
 import { getPhoto } from "../map/utils";
-import { getPlaceName, getPlacePhotoUrl } from "./utils";
 
 interface ListProps {
   places: MarkerProps[];
   map: any;
+  onMarkerSelect: (index: number) => void;
+  onMarkerDeselect: (index: number) => void;
 }
 
-const List: React.FC<ListProps> = ({ places, map }) => {
+const List: React.FC<ListProps> = ({
+  places,
+  map,
+  onMarkerSelect,
+  onMarkerDeselect,
+}) => {
   const [markers, setMarkers] = useState<MarkerProps[]>(places);
 
   const updatePhotos = async (places: MarkerProps[]) => {
@@ -19,7 +25,6 @@ const List: React.FC<ListProps> = ({ places, map }) => {
       ...place,
       imageUrl: urls[index].value,
     }));
-    console.log(newMarkers);
     setMarkers(newMarkers);
   };
 
@@ -31,10 +36,24 @@ const List: React.FC<ListProps> = ({ places, map }) => {
     <div className="list-section">
       <ul>
         {markers.map((marker, index) => (
-          <li key={index}>
+          <li
+            key={index}
+            onMouseEnter={() => onMarkerSelect(index)}
+            onMouseLeave={() => onMarkerDeselect(index)}
+          >
             <div className="list-item">
               <img srcSet={marker.imageUrl} />
-              <div className="text">{getPlaceName(marker.text)}</div>
+              <div className="item-info">
+                <h2 className="item-title">{marker.title}</h2>
+                <p className="item-description">{marker.desc}</p>
+                <p className="item-distance">
+                  {marker.route
+                    ? `${Math.floor(
+                        marker.route.routes[0].legs[0].duration.value / 60
+                      )} mnts`
+                    : ""}
+                </p>
+              </div>
             </div>
           </li>
         ))}

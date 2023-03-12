@@ -7,9 +7,9 @@ const Marker: React.FC<MarkerProps> = (props) => {
       <div
         className="pin bounce"
         style={{ backgroundColor: "blue", cursor: "pointer" }}
-        title={props.text}
+        title={props.title}
       />
-      <div className="marker-caption">{props.text}</div>
+      <div className="marker-caption">{props.title}</div>
       <div className="pulse" />
     </div>
   );

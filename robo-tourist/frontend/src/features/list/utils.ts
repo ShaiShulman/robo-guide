@@ -36,8 +36,3 @@ export const getPlacePhotoUrl: (
     });
   });
 };
-
-export const getPlaceName = (place: string) => {
-  const splitChars = /–|:/;
-  return place.split(splitChars, 2)[0];
-}

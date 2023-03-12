@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite --port 3000",
+    "dev": "vite --port 2000",
     "build": "tsc && vite build",
     "preview": "vite preview"
   },
@@ -17,7 +17,8 @@
     "google-map-react": "^2.2.0",
     "google-maps-react": "^2.0.6",
     "googleapis": "^111.0.0",
-    "openai": "^3.1.0",
+    "openai": "^3.2.1",
+    "react": "17.0.0",
     "react-bootstrap": "^2.7.2",
     "react-dom": "17.0.0"
   },

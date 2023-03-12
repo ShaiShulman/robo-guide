@@ -1,14 +1,23 @@
 import { FormEventHandler, useState } from "react";
 import { Button, Form } from "react-bootstrap";
-import { getSuggestions } from "../suggestions/openai";
+import { TravelMode } from "../map/interfaces";
+import { getSuggestions } from "../suggestions/openai-wrapper";
 
 interface PromptFormProps {
-  onNewSuggestions: (suggestions: string[], target: string) => void;
+  onNewSuggestions: (
+    suggestions: string[],
+    target: string,
+    origin: string,
+    transporationMode: string
+  ) => void;
 }
 
 const PromptForm: React.FC<PromptFormProps> = (props) => {
   const [prompt, setPrompt] = useState<string>("");
   const [preference, setPreference] = useState<string>("");
+  const [origin, setOrigin] = useState("");
+  const [travelMode, setTravelMode] = useState<TravelMode>("Walking");
+
   const [validated, setValidated] = useState(false);
 
   const handleSubmit: FormEventHandler<HTMLFormElement> = (event) => {
@@ -16,12 +25,8 @@ const PromptForm: React.FC<PromptFormProps> = (props) => {
     event.preventDefault();
     event.stopPropagation();
     if (form.checkValidity()) {
-      getSuggestions(
-        `I'm visiting ${prompt} ${
-          preference.length > 3 ? "and i like " + preference : ""
-        }. Give me 10 recommendations on what to visit`
-      ).then((result) => {
-        if (result) props.onNewSuggestions(result, prompt);
+      getSuggestions(prompt, preference).then((result) => {
+        if (result) props.onNewSuggestions(result, prompt, origin, travelMode);
       });
     }
     setValidated(true);
@@ -53,6 +58,31 @@ const PromptForm: React.FC<PromptFormProps> = (props) => {
               setPreference(e.target.value);
             }}
           />
+        </Form.Group>
+        <Form.Group className="mb-3">
+          <Form.Label>Where are you staying?</Form.Label>
+          <Form.Control
+            type="text"
+            placeholder="Enter a name of city, attraction, street address or leave blank"
+            value={origin}
+            onChange={(e) => {
+              setOrigin(e.target.value);
+            }}
+          />
+        </Form.Group>
+        <Form.Group className="mb-3">
+          <Form.Label>Transportation Mode</Form.Label>
+          <Form.Select
+            value={travelMode}
+            onChange={(e) => {
+              setTravelMode(e.target.value as TravelMode);
+            }}
+          >
+            <option>Walking</option>
+            <option>Transit</option>
+            <option>Driving</option>
+            <option>Spaceship</option>
+          </Form.Select>
         </Form.Group>
         <div>
           <Button type="submit">Get Recommendations!</Button>
