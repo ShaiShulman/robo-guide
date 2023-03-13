@@ -14,4 +14,4 @@ export interface Coord {
   lng: number;
 }
 
-export type TravelMode = "Walking" | "Transit" | "Driving";
+export type TravelMode = "Walking" | "Public Transport" | "Driving";

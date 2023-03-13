@@ -2,6 +2,7 @@ import { Coord, TravelMode } from "./interfaces";
 
 export const getPlace = (address: string, geocoder: any): any => {
   return new Promise((resolve, reject) => {
+    console.log(address);
     const geocoder = new google.maps.Geocoder();
     geocoder.geocode({ address: address }, (results, status) => {
       if (status === "OK") {
@@ -48,8 +49,11 @@ export async function getPhoto(placeId, map) {
 }
 
 export const splitPlaceName = (place: string) => {
-  const splitChars = /–|:|-/;
-  return place.split(splitChars, 2);
+  const SPLIT_CHARS = /–|:|-/;
+  const parts = place.split(SPLIT_CHARS, 2);
+  return parts.length === 1
+    ? [parts[0], ""]
+    : [parts[0], place.slice(parts[0].length + 1)];
 };
 
 export const getDistances = async (
@@ -57,6 +61,7 @@ export const getDistances = async (
   destinations: Coord[],
   travelMode: TravelMode
 ) => {
+  console.log(travelMode);
   const directionsService = new window.google.maps.DirectionsService();
   const originLatLng = new window.google.maps.LatLng(origin.lat, origin.lng);
   const destinationsLatLng = destinations.map(
@@ -72,9 +77,9 @@ export const getDistances = async (
             travelMode:
               travelMode === "Driving"
                 ? window.google.maps.TravelMode.DRIVING
-                : travelMode === "Transit"
+                : travelMode === "Public Transport"
                 ? window.google.maps.TravelMode.TRANSIT
-                : window.google.maps.TravelMode.DRIVING,
+                : window.google.maps.TravelMode.WALKING,
           };
           directionsService.route(request, (response, status) => {
             if (status === window.google.maps.DirectionsStatus.OK) {

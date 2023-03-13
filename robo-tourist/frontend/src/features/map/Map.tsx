@@ -10,12 +10,14 @@ import {
 } from "@react-google-maps/api";
 import React from "react";
 import { Spinner } from "react-bootstrap";
+import bullseyeSvg from "../../assets/bullseye.svg";
 
 interface MapProps {
   placeNames: string[];
   targetName: string;
   originName?: string;
   travelMode?: TravelMode;
+  showDirections: boolean;
   onMapLoaded: (places: MarkerProps[], Map: any) => void;
   selected?: number | null;
 }
@@ -27,10 +29,12 @@ const Map: React.FC<MapProps> = ({
   targetName,
   originName,
   travelMode,
+  showDirections,
   onMapLoaded,
   selected,
 }) => {
-  const [center, setCenter] = useState<Coord>({ lat: 0, lng: 0 });
+  const [mapBounds, setMapBounds] = useState<google.maps.LatLngBounds>();
+  const [originCoord, setOriginCoord] = useState<Coord>();
   const [markers, setMarkers] = useState<MarkerProps[]>([]);
   const [Map, setMap] = useState(null);
   const [lastSelected, setLastSelected] = useState<number | null>(null);
@@ -55,7 +59,6 @@ const Map: React.FC<MapProps> = ({
           width: Math.min(windowWidth.current, 1140),
         }}
         onLoad={onLoad}
-        center={center}
         zoom={5}
       >
         {markers.map((marker, index) => {
@@ -68,8 +71,14 @@ const Map: React.FC<MapProps> = ({
             />
           );
         })}
-        {selected && (
-          <DirectionsRenderer directions={markers[selected].route} />
+        {originCoord && (
+          <Marker key="center" position={originCoord} icon={bullseyeSvg} />
+        )}
+        {showDirections && selected && (
+          <DirectionsRenderer
+            directions={markers[selected].route}
+            options={{ suppressMarkers: true }}
+          />
         )}
       </GoogleMap>
     );
@@ -80,7 +89,9 @@ const Map: React.FC<MapProps> = ({
     const setMap = async () => {
       const geocoder = new google.maps.Geocoder();
       const locations = (await Promise.allSettled(
-        placeNames.map((place) => getPlace(`${place}, ${targetName}`, geocoder))
+        placeNames.map((place) =>
+          getPlace(`${splitPlaceName(place)[0]}, ${targetName}`, geocoder)
+        )
       )) as any[];
       const geometry = locations
         .filter((loc: any) => loc.status === "fulfilled")
@@ -94,7 +105,6 @@ const Map: React.FC<MapProps> = ({
       const avgLng =
         geometry.reduce((acc, geometry: any) => acc + geometry.lng, 0) /
         placeNames.length;
-      setCenter({ lat: avgLat, lng: avgLng });
 
       const markers = placeNames
         .map((place, index) => ({
@@ -106,23 +116,17 @@ const Map: React.FC<MapProps> = ({
           route: null,
         }))
         .filter((place) => place.lat && place.lng);
-      Map.fitBounds(getBounds(geometry));
+      const bounds = getBounds(geometry);
+      setMapBounds(bounds);
+      Map.fitBounds(bounds);
       const origin = await getPlace(originName || targetName, geocoder);
-      const routes = await getDistances(
-        { lat: origin.lat, lng: origin.lng },
-        markers.map((m) => ({ lat: m.lat, lng: m.lng })),
-        travelMode
-      );
-      console.log(routes);
-      routes.forEach((route, index) => {
-        markers[index].route = route;
-      });
-      setMarkers(markers);
+      if (originName && origin)
+        setOriginCoord({ lat: origin.lat, lng: origin.lng });
 
       onMapLoaded(markers, Map);
     };
     setMap().catch((err) => console.error(err));
-  }, [placeNames, Map]);
+  }, [placeNames, targetName, Map]);
 
   useEffect(() => {
     if (!Map) return;
@@ -133,6 +137,8 @@ const Map: React.FC<MapProps> = ({
     if (selected) {
       const marker = markerRefs.current[selected];
       if (marker) marker.setAnimation(google.maps.Animation.BOUNCE);
+    } else {
+      if (mapBounds) Map.fitBounds(mapBounds);
     }
     setLastSelected(selected);
   }, [Map, selected, markerRefs]);

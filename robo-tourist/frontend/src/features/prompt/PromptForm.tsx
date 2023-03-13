@@ -1,14 +1,13 @@
 import { FormEventHandler, useState } from "react";
 import { Button, Form } from "react-bootstrap";
 import { TravelMode } from "../map/interfaces";
-import { getSuggestions } from "../suggestions/openai-wrapper";
 
 interface PromptFormProps {
-  onNewSuggestions: (
-    suggestions: string[],
+  onFormSubmit: (
     target: string,
+    preference: string,
     origin: string,
-    transporationMode: string
+    transporationMode: TravelMode
   ) => void;
 }
 
@@ -25,9 +24,7 @@ const PromptForm: React.FC<PromptFormProps> = (props) => {
     event.preventDefault();
     event.stopPropagation();
     if (form.checkValidity()) {
-      getSuggestions(prompt, preference).then((result) => {
-        if (result) props.onNewSuggestions(result, prompt, origin, travelMode);
-      });
+      props.onFormSubmit(prompt, preference, origin, travelMode);
     }
     setValidated(true);
   };
@@ -71,7 +68,7 @@ const PromptForm: React.FC<PromptFormProps> = (props) => {
           />
         </Form.Group>
         <Form.Group className="mb-3">
-          <Form.Label>Transportation Mode</Form.Label>
+          <Form.Label>Travel Mode</Form.Label>
           <Form.Select
             value={travelMode}
             onChange={(e) => {
@@ -79,9 +76,8 @@ const PromptForm: React.FC<PromptFormProps> = (props) => {
             }}
           >
             <option>Walking</option>
-            <option>Transit</option>
+            <option>Public Transport</option>
             <option>Driving</option>
-            <option>Spaceship</option>
           </Form.Select>
         </Form.Group>
         <div>

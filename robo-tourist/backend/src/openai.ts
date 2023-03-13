@@ -22,7 +22,6 @@ export const getSuggestions = async (target: string, preference?: string) => {
       messages: [{ role: "user", content: prompt }],
     }),
   });
-  console.log(prompt);
   if (response.ok) {
     const message = (await response.json()).choices[0].message.content;
     if (message) return splitResponse(message as string);

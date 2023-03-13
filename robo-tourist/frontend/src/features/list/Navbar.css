@@ -1,0 +1,20 @@
+.navbar-container {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.form-flex {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.form-flex > div,
+button {
+  margin-left: 10px;
+}
+
+.form-flex > div,
+button:first-child {
+  margin-left: 0px;
+}
