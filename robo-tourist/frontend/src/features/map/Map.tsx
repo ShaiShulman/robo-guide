@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { getBounds, getDistances, getPlace, splitPlaceName } from "./utils";
-import { Coord, MarkerProps, TravelMode } from "./interfaces";
+import { getBounds, getDistances, getPlace, splitPlaceName } from "./map-utils";
+import { Coord, MarkerProps, Place, TravelMode } from "./interfaces";
 import { Marker } from "@react-google-maps/api";
 import { GOOGLE_MAPS_API_KEY } from "./const";
 import {
@@ -10,7 +10,7 @@ import {
 } from "@react-google-maps/api";
 import React from "react";
 import { Spinner } from "react-bootstrap";
-import bullseyeSvg from "../../assets/bullseye.svg";
+import bullseyeIcon from "../../assets/bullseye.svg";
 
 interface MapProps {
   placeNames: string[];
@@ -72,7 +72,7 @@ const Map: React.FC<MapProps> = ({
           );
         })}
         {originCoord && (
-          <Marker key="center" position={originCoord} icon={bullseyeSvg} />
+          <Marker key="center" position={originCoord} icon={bullseyeIcon} />
         )}
         {showDirections && selected && (
           <DirectionsRenderer
@@ -88,59 +88,74 @@ const Map: React.FC<MapProps> = ({
     if (placeNames.length === 0 || !Map) return;
     const setMap = async () => {
       const geocoder = new google.maps.Geocoder();
-      const locations = (await Promise.allSettled(
-        placeNames.map((place) =>
-          getPlace(`${splitPlaceName(place)[0]}, ${targetName}`, geocoder)
-        )
-      )) as any[];
-      const geometry = locations
-        .filter((loc: any) => loc.status === "fulfilled")
-        .map((loc: any) => ({
-          lat: loc.value.lat,
-          lng: loc.value.lng,
-        }));
-      const avgLat =
-        geometry.reduce((acc, geometry: any) => acc + geometry.lat, 0) /
-        placeNames.length;
-      const avgLng =
-        geometry.reduce((acc, geometry: any) => acc + geometry.lng, 0) /
-        placeNames.length;
+      let origin: Place | null = null;
+      let newMarkers: MarkerProps[] | null = null;
+      if (markers.length === 0) {
+        const locations = (await Promise.allSettled(
+          placeNames.map((place) =>
+            getPlace(splitPlaceName(place)[0], targetName, geocoder)
+          )
+        )) as any[];
+        const geometry = locations
+          .filter((loc: any) => loc.status === "fulfilled")
+          .map((loc: any) => ({
+            lat: loc.value.lat,
+            lng: loc.value.lng,
+          }));
+        const avgLat =
+          geometry.reduce((acc, geometry: any) => acc + geometry.lat, 0) /
+          placeNames.length;
+        const avgLng =
+          geometry.reduce((acc, geometry: any) => acc + geometry.lng, 0) /
+          placeNames.length;
 
-      const markers = placeNames
-        .map((place, index) => ({
-          title: splitPlaceName(place)[0],
-          desc: splitPlaceName(place)[1],
-          lat: locations[index]?.value?.lat,
-          lng: locations[index]?.value?.lng,
-          placeId: locations[index]?.value?.id,
-          route: null,
-        }))
-        .filter((place) => place.lat && place.lng);
-      const bounds = getBounds(geometry);
-      setMapBounds(bounds);
-      Map.fitBounds(bounds);
-      const origin = await getPlace(originName || targetName, geocoder);
-      if (originName && origin)
-        setOriginCoord({ lat: origin.lat, lng: origin.lng });
+        newMarkers = placeNames
+          .map((place, index) => ({
+            title: splitPlaceName(place)[0],
+            desc: splitPlaceName(place)[1],
+            lat: locations[index]?.value?.lat,
+            lng: locations[index]?.value?.lng,
+            placeId: locations[index]?.value?.id,
+            route: null,
+          }))
+          .filter((place) => place.lat && place.lng);
+        const bounds = getBounds(geometry);
+        setMapBounds(bounds);
+        Map.fitBounds(bounds);
+        setMarkers(newMarkers);
+        origin = await getPlace(originName || targetName, targetName, geocoder);
+        if (originName && origin)
+          setOriginCoord({ lat: origin.lat, lng: origin.lng });
+      } else newMarkers = [...markers];
+      console.log(originCoord, origin);
+      const routes = await getDistances(
+        { lat: (originCoord || origin).lat, lng: (originCoord || origin).lng },
+        newMarkers.map((m) => ({ lat: m.lat, lng: m.lng })),
+        travelMode
+      );
+      routes.forEach((route, index) => {
+        newMarkers[index].route = route;
+      });
+      setMarkers(newMarkers);
 
-      onMapLoaded(markers, Map);
+      onMapLoaded(newMarkers, Map);
     };
     setMap().catch((err) => console.error(err));
-  }, [placeNames, targetName, Map]);
+  }, [placeNames, targetName, travelMode, Map]);
 
   useEffect(() => {
     if (!Map) return;
-    if (lastSelected) {
+    if (!isNaN(lastSelected)) {
       const marker = markerRefs.current[lastSelected];
       if (marker) marker.setAnimation(null);
     }
-    if (selected) {
+    if (!isNaN(selected)) {
       const marker = markerRefs.current[selected];
       if (marker) marker.setAnimation(google.maps.Animation.BOUNCE);
+      setLastSelected(selected);
     } else {
       if (mapBounds) Map.fitBounds(mapBounds);
     }
-    setLastSelected(selected);
   }, [Map, selected, markerRefs]);
 
   if (loadError) {

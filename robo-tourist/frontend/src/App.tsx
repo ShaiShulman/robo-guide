@@ -44,15 +44,17 @@ function App() {
     setMode("Result");
   };
 
-  const handleMarkerSelect = (placeId: number, selected: boolean) => {
-    setSelected(selected ? placeId : null);
+  const handleMarkerSelect = (index: number, selected: boolean) => {
+    setSelected(selected ? index : null);
   };
 
   return (
     <div className="App">
       <main>
         {mode === "Prompt" && <PromptForm onFormSubmit={handleFormSubmitted} />}
-        {mode === "Loading" && <Spinner />}
+        {mode === "Loading" && (
+          <Spinner message="Beep boop\nThe robot is creating a gathering suggestions..." />
+        )}
         {mode === "Result" && (
           <div className="container">
             <Navbar
@@ -65,8 +67,9 @@ function App() {
             <List
               places={markers}
               map={MapRef}
-              onMarkerSelect={(id) => handleMarkerSelect(id, true)}
-              onMarkerDeselect={(id) => handleMarkerSelect(id, false)}
+              travelMode={travelMode}
+              onMarkerSelect={(index) => handleMarkerSelect(index, true)}
+              onMarkerDeselect={(index) => handleMarkerSelect(index, false)}
             />
 
             <div className="map-section">

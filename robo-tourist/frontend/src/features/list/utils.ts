@@ -36,3 +36,17 @@ export const getPlacePhotoUrl: (
     });
   });
 };
+
+export const formatDuration = (seconds: number) => {
+  const minutes = Math.round(seconds / 60);
+  const hours = Math.floor(minutes / 60);
+  const remainingMinutes = minutes % 60;
+  return `${hours.toString().padStart(2, "0")}:${remainingMinutes
+    .toString()
+    .padStart(2, "0")}`;
+};
+
+export const formatDistace = (meters: number) => {
+  if (meters < 500) return `${meters} m`;
+  else return `${(meters / 1000).toFixed(1)} km`;
+};

@@ -1,10 +1,13 @@
 import { useEffect, useState } from "react";
-import { MarkerProps } from "../map/interfaces";
-import { getPhoto } from "../map/utils";
+import { MarkerProps, TravelMode } from "../map/interfaces";
+import { getPhoto } from "../map/map-utils";
+import { formatDistace, formatDuration } from "./utils";
+import { travelModeIcons } from "./const";
 
 interface ListProps {
   places: MarkerProps[];
   map: any;
+  travelMode: TravelMode;
   onMarkerSelect: (index: number) => void;
   onMarkerDeselect: (index: number) => void;
 }
@@ -12,6 +15,7 @@ interface ListProps {
 const List: React.FC<ListProps> = ({
   places,
   map,
+  travelMode,
   onMarkerSelect,
   onMarkerDeselect,
 }) => {
@@ -44,15 +48,28 @@ const List: React.FC<ListProps> = ({
             <div className="list-item">
               <img srcSet={marker.imageUrl} />
               <div className="item-info">
-                <h2 className="item-title">{marker.title}</h2>
-                <p className="item-description">{marker.desc}</p>
-                <p className="item-distance">
-                  {marker.route
-                    ? `${Math.floor(
-                        marker.route.routes[0].legs[0].duration.value / 60
-                      )} mnts`
-                    : ""}
-                </p>
+                <h2 className="item-title">
+                  {marker.title}
+                  {marker.placeId}
+                </h2>
+                <div className="item-description">{marker.desc}</div>
+                <div className="item-distance corner-item">
+                  {marker.route && (
+                    <>
+                      <img
+                        className="text-icon"
+                        src={travelModeIcons[travelMode]}
+                      />
+                      {formatDuration(
+                        marker.route.routes[0].legs[0].duration.value
+                      )}{" "}
+                      minutes |{" "}
+                      {formatDistace(
+                        marker.route.routes[0].legs[0].distance.value
+                      )}
+                    </>
+                  )}
+                </div>
               </div>
             </div>
           </li>

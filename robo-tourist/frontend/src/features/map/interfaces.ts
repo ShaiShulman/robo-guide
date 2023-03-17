@@ -1,3 +1,9 @@
+export interface Place {
+  lat: number;
+  lng: number;
+  placeId: string;
+}
+
 export interface MarkerProps {
   title: string;
   desc?: string;

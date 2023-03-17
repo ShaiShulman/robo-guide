@@ -1,20 +1,30 @@
+import { DISTANCE_TRAVEL_DAY, DISTANCE_TRAVEL_TIME } from "./const";
 import { Coord, TravelMode } from "./interfaces";
 
-export const getPlace = (address: string, geocoder: any): any => {
+export const getPlace = (
+  placeName: string,
+  target: string,
+  geocoder: any
+): any => {
   return new Promise((resolve, reject) => {
-    console.log(address);
-    const geocoder = new google.maps.Geocoder();
-    geocoder.geocode({ address: address }, (results, status) => {
-      if (status === "OK") {
-        resolve({
-          lat: results[0].geometry.location.lat(),
-          lng: results[0].geometry.location.lng(),
-          id: results[0].place_id,
-        });
-      } else {
-        reject(status);
+    geocoder.geocode(
+      {
+        address: placeName.includes(target.trim())
+          ? placeName
+          : placeName + "," + target,
+      },
+      (results, status) => {
+        if (status === "OK") {
+          resolve({
+            lat: results[0].geometry.location.lat(),
+            lng: results[0].geometry.location.lng(),
+            id: results[0].place_id,
+          });
+        } else {
+          reject(status);
+        }
       }
-    });
+    );
   });
 };
 
@@ -61,7 +71,6 @@ export const getDistances = async (
   destinations: Coord[],
   travelMode: TravelMode
 ) => {
-  console.log(travelMode);
   const directionsService = new window.google.maps.DirectionsService();
   const originLatLng = new window.google.maps.LatLng(origin.lat, origin.lng);
   const destinationsLatLng = destinations.map(
@@ -74,6 +83,11 @@ export const getDistances = async (
           const request = {
             origin: originLatLng,
             destination: dest,
+            drivingOptions: {
+              departureTime: new Date(
+                `${DISTANCE_TRAVEL_DAY} ${DISTANCE_TRAVEL_TIME}`
+              ),
+            },
             travelMode:
               travelMode === "Driving"
                 ? window.google.maps.TravelMode.DRIVING
@@ -84,8 +98,6 @@ export const getDistances = async (
           directionsService.route(request, (response, status) => {
             if (status === window.google.maps.DirectionsStatus.OK) {
               resolve(response);
-              // const duration = response.routes[0].legs[0].duration.value;
-              // resolve(Math.floor(duration / 60));
             } else {
               reject(status);
             }

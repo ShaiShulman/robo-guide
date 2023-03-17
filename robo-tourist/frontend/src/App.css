@@ -44,7 +44,6 @@
   flex-direction: row;
   text-align: left;
   margin-bottom: 20px;
-  margin: 10px;
   border-radius: 10px 0 0 10px;
   background-color: lightgray;
   width: 100%;
@@ -62,6 +61,23 @@
 
 .item-info {
   padding: 20px;
+  position: relative;
+}
+
+.item-distance {
+  color: #586575;
+}
+
+.item-distance svg {
+  filter: invert(42%) sepia(7%) saturate(1184%) hue-rotate(173deg)
+    brightness(89%) contrast(90%);
+}
+
+.corner-item {
+  position: absolute;
+  top: 0;
+  right: 0;
+  padding: 10px;
 }
 
 .item-title {
@@ -81,6 +97,11 @@
   width: 100%;
   background-color: #eee;
   padding: 2px;
+}
+
+.text-icon {
+  width: 1rem;
+  margin-right: 6px;
 }
 
 /* Add media queries for responsive design */
