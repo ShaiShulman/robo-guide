@@ -1,27 +1,31 @@
 import { useEffect, useState } from "react";
-import { MarkerProps, TravelMode } from "../map/interfaces";
+import { MarkerInfo, TravelMode } from "../../globals/interfaces";
 import { getPhoto } from "../map/map-utils";
 import { formatDistace, formatDuration } from "./utils";
 import { travelModeIcons } from "./const";
+import { markersActions, selectMarkers } from "../../store/markerSlice";
+import { useSelector } from "react-redux";
+import { selectPrompt } from "../../store/promptSlice";
+import { useDispatch } from "react-redux";
+import { AppDispatch } from "../../store/store";
 
 interface ListProps {
-  places: MarkerProps[];
   map: any;
-  travelMode: TravelMode;
   onMarkerSelect: (index: number) => void;
   onMarkerDeselect: (index: number) => void;
 }
 
 const List: React.FC<ListProps> = ({
-  places,
   map,
-  travelMode,
   onMarkerSelect,
   onMarkerDeselect,
 }) => {
-  const [markers, setMarkers] = useState<MarkerProps[]>(places);
+  const markers = useSelector(selectMarkers);
+  const promptInfo = useSelector(selectPrompt);
 
-  const updatePhotos = async (places: MarkerProps[]) => {
+  const dispatch: AppDispatch = useDispatch();
+
+  const updatePhotos = async (places) => {
     const urls = (await Promise.allSettled(
       places.map((place) => getPhoto(place.placeId, map))
     )) as any[];
@@ -29,12 +33,13 @@ const List: React.FC<ListProps> = ({
       ...place,
       imageUrl: urls[index].value,
     }));
-    setMarkers(newMarkers);
+    console.log(newMarkers);
+    dispatch(markersActions.create(newMarkers));
   };
 
   useEffect(() => {
-    if (map) updatePhotos(places);
-  }, [places, map]);
+    if (map) updatePhotos(markers);
+  }, [markers, map]);
 
   return (
     <div className="list-section">
@@ -58,7 +63,7 @@ const List: React.FC<ListProps> = ({
                     <>
                       <img
                         className="text-icon"
-                        src={travelModeIcons[travelMode]}
+                        src={travelModeIcons[promptInfo.travelMode]}
                       />
                       {formatDuration(
                         marker.route.routes[0].legs[0].duration.value

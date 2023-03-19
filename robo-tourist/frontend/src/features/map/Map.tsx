@@ -1,6 +1,14 @@
 import { useEffect, useRef, useState } from "react";
-import { getBounds, getDistances, getPlace, splitPlaceName } from "./map-utils";
-import { Coord, MarkerProps, Place, TravelMode } from "./interfaces";
+import {
+  getBounds,
+  getDistances,
+  getPhoto,
+  getPlace,
+  splitPlaceName,
+} from "./map-utils";
+import { Coord } from "../../globals/interfaces";
+import { Place } from "./interfaces";
+import { MarkerInfo } from "../../globals/interfaces";
 import { Marker } from "@react-google-maps/api";
 import { GOOGLE_MAPS_API_KEY } from "./const";
 import {
@@ -11,14 +19,16 @@ import {
 import React from "react";
 import { Spinner } from "react-bootstrap";
 import bullseyeIcon from "../../assets/bullseye.svg";
+import { useSelector } from "react-redux";
+import { selectPrompt } from "../../store/promptSlice";
+import { markersActions, selectMarkers } from "../../store/markerSlice";
+import { useDispatch } from "react-redux";
+import { AppDispatch } from "../../store/store";
 
 interface MapProps {
   placeNames: string[];
-  targetName: string;
-  originName?: string;
-  travelMode?: TravelMode;
   showDirections: boolean;
-  onMapLoaded: (places: MarkerProps[], Map: any) => void;
+  onMapLoaded: (Map: any) => void;
   selected?: number | null;
 }
 
@@ -26,26 +36,39 @@ const LIBRARIES = ["places"] as any;
 
 const Map: React.FC<MapProps> = ({
   placeNames,
-  targetName,
-  originName,
-  travelMode,
   showDirections,
   onMapLoaded,
   selected,
 }) => {
   const [mapBounds, setMapBounds] = useState<google.maps.LatLngBounds>();
   const [originCoord, setOriginCoord] = useState<Coord>();
-  const [markers, setMarkers] = useState<MarkerProps[]>([]);
   const [Map, setMap] = useState(null);
   const [lastSelected, setLastSelected] = useState<number | null>(null);
 
   const windowWidth = useRef(window.innerWidth);
   const markerRefs = useRef([]);
 
+  const dispatch: AppDispatch = useDispatch();
+
   const { isLoaded, loadError } = useJsApiLoader({
     googleMapsApiKey: GOOGLE_MAPS_API_KEY,
     libraries: LIBRARIES,
   });
+
+  const promptInfo = useSelector(selectPrompt);
+  const markers = useSelector(selectMarkers);
+
+  const getPhotos = async (places) => {
+    const urls = (await Promise.allSettled(
+      places.map((place) => getPhoto(place.placeId, Map))
+    )) as any[];
+    const newMarkers = places.map((place, index) => ({
+      ...place,
+      imageUrl: urls[index].value,
+    }));
+    console.log(newMarkers);
+    dispatch(markersActions.create(newMarkers));
+  };
 
   const renderMap = () => {
     const onLoad = (map: any) => {
@@ -85,15 +108,15 @@ const Map: React.FC<MapProps> = ({
   };
 
   useEffect(() => {
-    if (placeNames.length === 0 || !Map) return;
+    if (placeNames.length === 0 || !Map || markers.length) return;
     const setMap = async () => {
       const geocoder = new google.maps.Geocoder();
       let origin: Place | null = null;
-      let newMarkers: MarkerProps[] | null = null;
+      let newMarkers: MarkerInfo[] | null = null;
       if (markers.length === 0) {
         const locations = (await Promise.allSettled(
           placeNames.map((place) =>
-            getPlace(splitPlaceName(place)[0], targetName, geocoder)
+            getPlace(splitPlaceName(place)[0], promptInfo.target, geocoder)
           )
         )) as any[];
         const geometry = locations
@@ -122,26 +145,28 @@ const Map: React.FC<MapProps> = ({
         const bounds = getBounds(geometry);
         setMapBounds(bounds);
         Map.fitBounds(bounds);
-        setMarkers(newMarkers);
-        origin = await getPlace(originName || targetName, targetName, geocoder);
-        if (originName && origin)
+        // dispatch(markersActions.create(markers));
+        origin = await getPlace(
+          promptInfo.origin || promptInfo.target,
+          promptInfo.target,
+          geocoder
+        );
+        if (promptInfo.origin && origin)
           setOriginCoord({ lat: origin.lat, lng: origin.lng });
       } else newMarkers = [...markers];
-      console.log(originCoord, origin);
       const routes = await getDistances(
         { lat: (originCoord || origin).lat, lng: (originCoord || origin).lng },
         newMarkers.map((m) => ({ lat: m.lat, lng: m.lng })),
-        travelMode
+        promptInfo.travelMode
       );
-      routes.forEach((route, index) => {
-        newMarkers[index].route = route;
-      });
-      setMarkers(newMarkers);
-
-      onMapLoaded(newMarkers, Map);
+      // routes.forEach((route, index) => {
+      //   newMarkers[index].route = route;
+      // });
+      dispatch(markersActions.create(newMarkers));
+      onMapLoaded(Map);
     };
     setMap().catch((err) => console.error(err));
-  }, [placeNames, targetName, travelMode, Map]);
+  }, [placeNames, promptInfo.target, promptInfo.travelMode, Map]);
 
   useEffect(() => {
     if (!Map) return;

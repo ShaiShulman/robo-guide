@@ -1,5 +1,5 @@
 import { DISTANCE_TRAVEL_DAY, DISTANCE_TRAVEL_TIME } from "./const";
-import { Coord, TravelMode } from "./interfaces";
+import { Coord, TravelMode } from "../../globals/interfaces";
 
 export const getPlace = (
   placeName: string,

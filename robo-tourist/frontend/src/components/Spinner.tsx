@@ -10,11 +10,8 @@ const Spinner: React.FC<SpinnerProps> = ({ message }) => {
     <div className="spinner-container">
       <div className="spinner"></div>
       <div className="message">
-        {message.split("\n").map((line, i) => (
-          <React.Fragment key={i}>
-            {line}
-            <br />
-          </React.Fragment>
+        {message.split("\\n").map((line, i) => (
+          <p key={i}>{line}</p>
         ))}
       </div>
     </div>

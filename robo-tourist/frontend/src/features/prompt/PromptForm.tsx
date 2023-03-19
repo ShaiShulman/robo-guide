@@ -1,14 +1,12 @@
 import { FormEventHandler, useState } from "react";
 import { Button, Form } from "react-bootstrap";
-import { TravelMode } from "../map/interfaces";
+import { TravelMode } from "../../globals/interfaces";
+import { AppDispatch } from "../../store/store";
+import { promptActions } from "../../store/promptSlice";
+import { useDispatch } from "react-redux";
 
 interface PromptFormProps {
-  onFormSubmit: (
-    target: string,
-    preference: string,
-    origin: string,
-    transporationMode: TravelMode
-  ) => void;
+  onFormSubmit: (promptInfo) => void;
 }
 
 const PromptForm: React.FC<PromptFormProps> = (props) => {
@@ -19,12 +17,17 @@ const PromptForm: React.FC<PromptFormProps> = (props) => {
 
   const [validated, setValidated] = useState(false);
 
+  const dispatch: AppDispatch = useDispatch();
+
   const handleSubmit: FormEventHandler<HTMLFormElement> = (event) => {
     const form: any = event.currentTarget;
     event.preventDefault();
     event.stopPropagation();
     if (form.checkValidity()) {
-      props.onFormSubmit(prompt, preference, origin, travelMode);
+      dispatch(
+        promptActions.update({ target: prompt, preference, origin, travelMode })
+      );
+      props.onFormSubmit({ target: prompt, preference, origin, travelMode });
     }
     setValidated(true);
   };
