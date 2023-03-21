@@ -1,5 +1,5 @@
 import { Button, FloatingLabel, Form } from "react-bootstrap";
-import { TravelMode } from "../map/interfaces";
+import { TravelMode } from "../../globals/interfaces";
 import "./Navbar.css";
 
 interface NavbarProps {

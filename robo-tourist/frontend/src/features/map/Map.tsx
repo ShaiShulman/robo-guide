@@ -22,8 +22,8 @@ import bullseyeIcon from "../../assets/bullseye.svg";
 import { useSelector } from "react-redux";
 import { selectPrompt } from "../../store/promptSlice";
 import { markersActions, selectMarkers } from "../../store/markerSlice";
-import { useDispatch } from "react-redux";
-import { AppDispatch } from "../../store/store";
+import getDispatch from "../../lib/get-dispatch";
+import { selectView, viewActions } from "../../store/viewSlice";
 
 interface MapProps {
   placeNames: string[];
@@ -43,12 +43,12 @@ const Map: React.FC<MapProps> = ({
   const [mapBounds, setMapBounds] = useState<google.maps.LatLngBounds>();
   const [originCoord, setOriginCoord] = useState<Coord>();
   const [Map, setMap] = useState(null);
-  const [lastSelected, setLastSelected] = useState<number | null>(null);
+  const [routes, setRoutes] = useState<google.maps.DirectionsResult[]>([]);
 
   const windowWidth = useRef(window.innerWidth);
   const markerRefs = useRef([]);
 
-  const dispatch: AppDispatch = useDispatch();
+  const view = useSelector(selectView);
 
   const { isLoaded, loadError } = useJsApiLoader({
     googleMapsApiKey: GOOGLE_MAPS_API_KEY,
@@ -57,17 +57,17 @@ const Map: React.FC<MapProps> = ({
 
   const promptInfo = useSelector(selectPrompt);
   const markers = useSelector(selectMarkers);
+  const dispatch = getDispatch();
 
-  const getPhotos = async (places) => {
+  const getPhotos = async (placeIds: string[]) => {
     const urls = (await Promise.allSettled(
-      places.map((place) => getPhoto(place.placeId, Map))
+      placeIds.map((id) => getPhoto(id, Map))
     )) as any[];
-    const newMarkers = places.map((place, index) => ({
-      ...place,
-      imageUrl: urls[index].value,
-    }));
-    console.log(newMarkers);
-    dispatch(markersActions.create(newMarkers));
+    return urls.map((url) => url.value);
+  };
+
+  const handleMarkerClick = (index: number) => {
+    dispatch(viewActions.setSelected(view.selected === index ? null : index));
   };
 
   const renderMap = () => {
@@ -90,16 +90,19 @@ const Map: React.FC<MapProps> = ({
               key={index}
               position={{ lat: marker.lat, lng: marker.lng }}
               title={marker.title}
-              onLoad={(marker) => markerRefs.current.push(marker)}
+              onLoad={(marker) => {
+                markerRefs.current.push(marker);
+                marker.addListener("click", () => handleMarkerClick(index));
+              }}
             />
           );
         })}
         {originCoord && (
           <Marker key="center" position={originCoord} icon={bullseyeIcon} />
         )}
-        {showDirections && selected && (
+        {view.directions && view.selected !== null && (
           <DirectionsRenderer
-            directions={markers[selected].route}
+            directions={routes[selected]}
             options={{ suppressMarkers: true }}
           />
         )}
@@ -139,7 +142,6 @@ const Map: React.FC<MapProps> = ({
             lat: locations[index]?.value?.lat,
             lng: locations[index]?.value?.lng,
             placeId: locations[index]?.value?.id,
-            route: null,
           }))
           .filter((place) => place.lat && place.lng);
         const bounds = getBounds(geometry);
@@ -154,34 +156,38 @@ const Map: React.FC<MapProps> = ({
         if (promptInfo.origin && origin)
           setOriginCoord({ lat: origin.lat, lng: origin.lng });
       } else newMarkers = [...markers];
-      const routes = await getDistances(
+      const newRoutes = await getDistances(
         { lat: (originCoord || origin).lat, lng: (originCoord || origin).lng },
         newMarkers.map((m) => ({ lat: m.lat, lng: m.lng })),
         promptInfo.travelMode
       );
-      // routes.forEach((route, index) => {
-      //   newMarkers[index].route = route;
-      // });
-      dispatch(markersActions.create(newMarkers));
+      newRoutes.forEach((route, index) => {
+        newMarkers[index].routeDistance =
+          route.routes[0].legs[0].distance.value;
+        newMarkers[index].routeDuration =
+          route.routes[0].legs[0].duration.value;
+      });
+      setRoutes(newRoutes);
+      console.log(newMarkers);
+      dispatch(markersActions.update(newMarkers));
       onMapLoaded(Map);
+      const photos = await getPhotos(
+        newMarkers.map((marker) => marker.placeId)
+      );
+      dispatch(markersActions.updatePhotos(photos));
     };
     setMap().catch((err) => console.error(err));
   }, [placeNames, promptInfo.target, promptInfo.travelMode, Map]);
 
   useEffect(() => {
     if (!Map) return;
-    if (!isNaN(lastSelected)) {
-      const marker = markerRefs.current[lastSelected];
-      if (marker) marker.setAnimation(null);
-    }
-    if (!isNaN(selected)) {
-      const marker = markerRefs.current[selected];
-      if (marker) marker.setAnimation(google.maps.Animation.BOUNCE);
-      setLastSelected(selected);
-    } else {
-      if (mapBounds) Map.fitBounds(mapBounds);
-    }
-  }, [Map, selected, markerRefs]);
+    markerRefs.current.forEach((mrk, idx) => {
+      mrk.setAnimation(
+        idx === view.selected ? google.maps.Animation.BOUNCE : null
+      );
+    });
+    if (selected === null && mapBounds) Map.fitBounds(mapBounds);
+  }, [Map, view.selected, markerRefs]);
 
   if (loadError) {
     return <div>Error loading map.</div>;

@@ -9,6 +9,8 @@ export interface MarkerInfo {
   lng: number;
   imageUrl?: string;
   placeId?: string;
+  routeDistance?: number;
+  routeDuration?: number;
   route?: google.maps.DirectionsResult;
   url?: string;
   selected?: boolean;

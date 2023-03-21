@@ -1,11 +1,13 @@
 import { AnyAction, configureStore, ThunkAction } from "@reduxjs/toolkit";
 import promptReducer from "./promptSlice";
 import markersReducer from "./markerSlice";
+import viewReducer from "./viewSlice";
 
 export const store = configureStore({
   reducer: {
     prompt: promptReducer,
     markers: markersReducer,
+    view: viewReducer,
   },
 });
 

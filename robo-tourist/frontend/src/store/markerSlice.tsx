@@ -12,8 +12,17 @@ export const MarkersSlice = createSlice({
   name: "markers",
   initialState,
   reducers: {
-    create: (state, action: PayloadAction<MarkerInfo[]>) => {
+    update: (state, action: PayloadAction<MarkerInfo[]>) => {
       return { ...state, items: action.payload };
+    },
+    updatePhotos: (state, action: PayloadAction<string[]>) => {
+      return {
+        ...state,
+        items: state.items.map((item, idx) => ({
+          ...item,
+          imageUrl: action.payload[idx],
+        })),
+      };
     },
   },
 });
@@ -21,6 +30,11 @@ export const MarkersSlice = createSlice({
 export const selectMarkers = createSelector(
   (state: RootState) => state.markers,
   (data) => data.items
+);
+
+export const selectImages = createSelector(
+  (state: RootState) => state.markers,
+  (data) => data.items.map((item) => item.imageUrl)
 );
 
 export const markersActions = MarkersSlice.actions;

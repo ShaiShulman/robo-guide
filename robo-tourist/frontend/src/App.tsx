@@ -18,7 +18,6 @@ function App() {
   const [places, setPlaces] = useState<string[]>(["london bridge"]);
   const [showDirections, setShowDirections] = useState(true);
   const [MapRef, setMapRef] = useState();
-  const [selected, setSelected] = useState<number | null>(null);
 
   const promptInfo = useSelector(selectPrompt);
 
@@ -34,10 +33,6 @@ function App() {
   const handleMapLoaded = (MapsApi: any) => {
     setMapRef(MapsApi);
     setMode("Result");
-  };
-
-  const handleMarkerSelect = (index: number, selected: boolean) => {
-    setSelected(selected ? index : null);
   };
 
   return (
@@ -58,18 +53,13 @@ function App() {
               }
               onChangeShowDirections={(show) => setShowDirections(show)}
             />
-            <List
-              map={MapRef}
-              onMarkerSelect={(index) => handleMarkerSelect(index, true)}
-              onMarkerDeselect={(index) => handleMarkerSelect(index, false)}
-            />
+            <List map={MapRef} />
 
             <div className="map-section">
               <Map
                 placeNames={places}
                 showDirections={showDirections}
                 onMapLoaded={handleMapLoaded}
-                selected={selected}
               />
             </div>
           </div>

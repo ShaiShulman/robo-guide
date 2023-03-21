@@ -1,9 +1,9 @@
-import { FormEventHandler, useState } from "react";
+import { FormEventHandler, useEffect, useState } from "react";
 import { Button, Form } from "react-bootstrap";
 import { TravelMode } from "../../globals/interfaces";
 import { AppDispatch } from "../../store/store";
-import { promptActions } from "../../store/promptSlice";
-import { useDispatch } from "react-redux";
+import { promptActions, selectPrompt } from "../../store/promptSlice";
+import { useDispatch, useSelector } from "react-redux";
 
 interface PromptFormProps {
   onFormSubmit: (promptInfo) => void;
@@ -16,6 +16,8 @@ const PromptForm: React.FC<PromptFormProps> = (props) => {
   const [travelMode, setTravelMode] = useState<TravelMode>("Walking");
 
   const [validated, setValidated] = useState(false);
+
+  const defualtPrompt = useSelector(selectPrompt);
 
   const dispatch: AppDispatch = useDispatch();
 
@@ -31,6 +33,13 @@ const PromptForm: React.FC<PromptFormProps> = (props) => {
     }
     setValidated(true);
   };
+
+  useEffect(() => {
+    setPrompt(defualtPrompt.target);
+    setPreference(defualtPrompt.preference);
+    setOrigin(defualtPrompt.origin);
+    setTravelMode(defualtPrompt.travelMode);
+  }, []);
 
   return (
     <div>
