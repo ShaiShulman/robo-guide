@@ -23,23 +23,16 @@ import { useSelector } from "react-redux";
 import { selectPrompt } from "../../store/promptSlice";
 import { markersActions, selectMarkers } from "../../store/markerSlice";
 import getDispatch from "../../lib/get-dispatch";
-import { selectView, viewActions } from "../../store/viewSlice";
+import { selectView, viewActions, ViewSliceProps } from "../../store/viewSlice";
 
 interface MapProps {
   placeNames: string[];
-  showDirections: boolean;
   onMapLoaded: (Map: any) => void;
-  selected?: number | null;
 }
 
 const LIBRARIES = ["places"] as any;
 
-const Map: React.FC<MapProps> = ({
-  placeNames,
-  showDirections,
-  onMapLoaded,
-  selected,
-}) => {
+const Map: React.FC<MapProps> = ({ placeNames, onMapLoaded }) => {
   const [mapBounds, setMapBounds] = useState<google.maps.LatLngBounds>();
   const [originCoord, setOriginCoord] = useState<Coord>();
   const [Map, setMap] = useState(null);
@@ -90,10 +83,8 @@ const Map: React.FC<MapProps> = ({
               key={index}
               position={{ lat: marker.lat, lng: marker.lng }}
               title={marker.title}
-              onLoad={(marker) => {
-                markerRefs.current.push(marker);
-                marker.addListener("click", () => handleMarkerClick(index));
-              }}
+              onClick={() => handleMarkerClick(index)}
+              onLoad={(marker) => markerRefs.current.push(marker)}
             />
           );
         })}
@@ -102,7 +93,7 @@ const Map: React.FC<MapProps> = ({
         )}
         {view.directions && view.selected !== null && (
           <DirectionsRenderer
-            directions={routes[selected]}
+            directions={routes[view.selected]}
             options={{ suppressMarkers: true }}
           />
         )}
@@ -168,7 +159,6 @@ const Map: React.FC<MapProps> = ({
           route.routes[0].legs[0].duration.value;
       });
       setRoutes(newRoutes);
-      console.log(newMarkers);
       dispatch(markersActions.update(newMarkers));
       onMapLoaded(Map);
       const photos = await getPhotos(
@@ -186,7 +176,7 @@ const Map: React.FC<MapProps> = ({
         idx === view.selected ? google.maps.Animation.BOUNCE : null
       );
     });
-    if (selected === null && mapBounds) Map.fitBounds(mapBounds);
+    if (view.selected === null && mapBounds) Map.fitBounds(mapBounds);
   }, [Map, view.selected, markerRefs]);
 
   if (loadError) {

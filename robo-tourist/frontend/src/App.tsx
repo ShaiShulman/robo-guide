@@ -1,69 +1,62 @@
 import { useState } from "react";
-import { Provider, useSelector } from "react-redux";
+import { Provider, useDispatch, useSelector } from "react-redux";
 
 import Map from "./features/map/Map";
 import "./App.css";
 import PromptForm from "./features/prompt/PromptForm";
 import List from "./features/list/List";
-import { AppMode } from "./globals/interfaces";
 import Spinner from "./components/Spinner";
 import { getSuggestions } from "./features/suggestions/openai-wrapper";
 import Navbar from "./features/list/Navbar";
-import { selectPrompt } from "./store/promptSlice";
-import { promptActions } from "./store/promptSlice";
-import { store } from "./store/store";
+import Error from "./components/Error";
+import getDispatch from "./lib/get-dispatch";
+import { appActions, selectAppState } from "./store/appSlice";
 
 function App() {
-  const [mode, setMode] = useState<AppMode>("Prompt");
-  const [places, setPlaces] = useState<string[]>(["london bridge"]);
-  const [showDirections, setShowDirections] = useState(true);
+  const [places, setPlaces] = useState<string[]>([]);
   const [MapRef, setMapRef] = useState();
 
-  const promptInfo = useSelector(selectPrompt);
+  const dispatch = getDispatch();
+  const appState = useSelector(selectAppState);
 
   const handleFormSubmitted = (prompt) => {
-    setMode("Loading");
-    getSuggestions(prompt.target, prompt.preference).then((suggestions) => {
-      if (suggestions) {
-        setPlaces(suggestions);
-        setMode("Result");
-      } else setMode("Prompt");
-    });
+    dispatch(appActions.setMode("Loading"));
+    getSuggestions(prompt.target, prompt.preference)
+      .then((suggestions) => {
+        if (suggestions) {
+          setPlaces(suggestions);
+          dispatch(appActions.setMode("Result"));
+        } else appActions.setMode("Prompt");
+      })
+      .catch((error) => {
+        dispatch(appActions.setError(error.message));
+      });
   };
   const handleMapLoaded = (MapsApi: any) => {
     setMapRef(MapsApi);
-    setMode("Result");
+    dispatch(appActions.setMode("Result"));
   };
 
   return (
     <div className="App">
       <main>
-        {mode === "Prompt" && <PromptForm onFormSubmit={handleFormSubmitted} />}
-        {mode === "Loading" && (
+        {appState.mode === "Prompt" && (
+          <PromptForm onFormSubmit={handleFormSubmitted} />
+        )}
+        {appState.mode === "Loading" && (
           <Spinner message="Beep boop\nThe robot is gathering suggestions..." />
         )}
-        {mode === "Result" && (
+        {appState.mode === "Result" && (
           <div className="container">
-            <Navbar
-              travelMode={promptInfo.travelMode}
-              showDirections={showDirections}
-              onNewSearch={() => setMode("Prompt")}
-              onChangeTravelMode={(travelMode) =>
-                promptActions.updateTravelMode(travelMode)
-              }
-              onChangeShowDirections={(show) => setShowDirections(show)}
-            />
+            <Navbar />
             <List map={MapRef} />
 
             <div className="map-section">
-              <Map
-                placeNames={places}
-                showDirections={showDirections}
-                onMapLoaded={handleMapLoaded}
-              />
+              <Map placeNames={places} onMapLoaded={handleMapLoaded} />
             </div>
           </div>
         )}
+        {appState.mode === "Error" && <Error />}
       </main>
     </div>
   );

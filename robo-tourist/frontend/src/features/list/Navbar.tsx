@@ -1,31 +1,35 @@
 import { Button, FloatingLabel, Form } from "react-bootstrap";
+import { useSelector } from "react-redux";
 import { TravelMode } from "../../globals/interfaces";
+import getDispatch from "../../lib/get-dispatch";
+import { appActions } from "../../store/appSlice";
+import { markersActions } from "../../store/markerSlice";
+import { promptActions, selectPrompt } from "../../store/promptSlice";
+import { selectView, viewActions } from "../../store/viewSlice";
 import "./Navbar.css";
 
-interface NavbarProps {
-  travelMode: TravelMode;
-  showDirections: boolean;
-  onNewSearch: () => void;
-  onChangeTravelMode: (travelMode: TravelMode) => void;
-  onChangeShowDirections: (showDirections: boolean) => void;
-}
+const Navbar: React.FC = ({}) => {
+  const dispatch = getDispatch();
 
-const Navbar: React.FC<NavbarProps> = ({
-  travelMode,
-  showDirections,
-  onNewSearch,
-  onChangeTravelMode,
-  onChangeShowDirections,
-}) => {
+  const newSearch = () => {
+    dispatch(markersActions.reset());
+    dispatch(appActions.setMode("Prompt"));
+  };
+
+  const view = useSelector(selectView);
+  const prompt = useSelector(selectPrompt);
+
   return (
     <div className="navbar-container">
       <Form className="form-flex">
-        <Button onClick={() => onNewSearch()}>New Search</Button>
+        <Button onClick={() => newSearch()}>New Search</Button>
         <FloatingLabel controlId="floatingSelect" label="Travel mode">
           <Form.Select
             aria-label="Travel mode"
-            value={travelMode}
-            onChange={(e) => onChangeTravelMode(e.target.value as TravelMode)}
+            value={prompt.travelMode}
+            onChange={(e) =>
+              promptActions.updateTravelMode(e.target.value as TravelMode)
+            }
           >
             <option>Walking</option>
             <option>Public Transport</option>
@@ -35,8 +39,8 @@ const Navbar: React.FC<NavbarProps> = ({
         <Form.Check
           type="switch"
           label="Directions"
-          checked={showDirections}
-          onChange={(e) => onChangeShowDirections(e.target.checked)}
+          checked={view.directions}
+          onChange={(e) => viewActions.setdirections(e.target.checked)}
         />
       </Form>
     </div>

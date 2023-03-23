@@ -43,7 +43,7 @@ export const formatDuration = (seconds: number) => {
   const remainingMinutes = minutes % 60;
   return `${hours.toString().padStart(2, "0")}:${remainingMinutes
     .toString()
-    .padStart(2, "0")}`;
+    .padStart(2, "0")} ${seconds >= 3600 ? "hours" : "minutes"}`;
 };
 
 export const formatDistace = (meters: number) => {

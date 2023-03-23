@@ -1,7 +1,7 @@
 import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { RootState } from "./store";
 
-interface ViewSliceProps {
+export interface ViewSliceProps {
   selected: number | null;
   directions: boolean;
 }

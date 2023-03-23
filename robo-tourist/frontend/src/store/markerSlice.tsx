@@ -12,6 +12,7 @@ export const MarkersSlice = createSlice({
   name: "markers",
   initialState,
   reducers: {
+    reset: (state) => initialState,
     update: (state, action: PayloadAction<MarkerInfo[]>) => {
       return { ...state, items: action.payload };
     },

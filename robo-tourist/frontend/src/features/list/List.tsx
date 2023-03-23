@@ -6,6 +6,8 @@ import { selectPrompt } from "../../store/promptSlice";
 import dispatch from "../../lib/get-dispatch";
 import { selectView, viewActions } from "../../store/viewSlice";
 import getDispatch from "../../lib/get-dispatch";
+import React, { useEffect, useMemo } from "react";
+import { ensureElementVisible } from "../../utils/views-utils";
 
 interface ListProps {
   map: any;
@@ -18,6 +20,15 @@ const List: React.FC<ListProps> = ({ map }) => {
   const images = useSelector(selectImages);
   const promptInfo = useSelector(selectPrompt);
   const view = useSelector(selectView);
+  const refsMarkers = useMemo(
+    () => markers.map((m) => React.createRef<HTMLDivElement>()),
+    [markers]
+  );
+
+  useEffect(() => {
+    if (view.selected !== null)
+      ensureElementVisible(refsMarkers[view.selected]);
+  }, [view.selected]);
 
   return (
     <div className="list-section">
@@ -26,12 +37,13 @@ const List: React.FC<ListProps> = ({ map }) => {
           <li
             key={index}
             onMouseEnter={() => dispatch(viewActions.setSelected(index))}
-            onMouseLeave={() => dispatch(viewActions.setSelected(index))}
+            onMouseLeave={() => dispatch(viewActions.setSelected(null))}
           >
             <div
               className={`list-item ${
                 view.selected === index ? "selected" : ""
               }`}
+              ref={refsMarkers[index]}
             >
               <img srcSet={marker.imageUrl} />
               <div className="item-info">
@@ -44,7 +56,7 @@ const List: React.FC<ListProps> = ({ map }) => {
                         className="text-icon"
                         src={travelModeIcons[promptInfo.travelMode]}
                       />
-                      {formatDuration(marker.routeDuration)} minutes |
+                      {formatDuration(marker.routeDuration)} |
                       {formatDistace(marker.routeDistance)}
                     </>
                   )}

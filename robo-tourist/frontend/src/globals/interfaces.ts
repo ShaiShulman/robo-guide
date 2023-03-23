@@ -1,4 +1,4 @@
-export type AppMode = "Prompt" | "Loading" | "Result";
+export type AppMode = "Prompt" | "Loading" | "Result" | "Error";
 
 export type TravelMode = "Walking" | "Public Transport" | "Driving";
 
