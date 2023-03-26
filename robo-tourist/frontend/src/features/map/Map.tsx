@@ -4,6 +4,7 @@ import {
   getDistances,
   getPhoto,
   getPlace,
+  numberedMarker,
   splitPlaceName,
 } from "./map-utils";
 import { Coord } from "../../globals/interfaces";
@@ -23,11 +24,15 @@ import { useSelector } from "react-redux";
 import { selectPrompt } from "../../store/promptSlice";
 import { markersActions, selectMarkers } from "../../store/markerSlice";
 import getDispatch from "../../lib/get-dispatch";
-import { selectView, viewActions, ViewSliceProps } from "../../store/viewSlice";
+import { selectView, viewActions } from "../../store/viewSlice";
 
 interface MapProps {
   placeNames: string[];
   onMapLoaded: (Map: any) => void;
+}
+
+interface MarkerWithRoute extends MarkerInfo {
+  route?: google.maps.DirectionsResult;
 }
 
 const LIBRARIES = ["places"] as any;
@@ -81,6 +86,7 @@ const Map: React.FC<MapProps> = ({ placeNames, onMapLoaded }) => {
           return (
             <Marker
               key={index}
+              icon={numberedMarker(index + 1)}
               position={{ lat: marker.lat, lng: marker.lng }}
               title={marker.title}
               onClick={() => handleMarkerClick(index)}
@@ -106,7 +112,7 @@ const Map: React.FC<MapProps> = ({ placeNames, onMapLoaded }) => {
     const setMap = async () => {
       const geocoder = new google.maps.Geocoder();
       let origin: Place | null = null;
-      let newMarkers: MarkerInfo[] | null = null;
+      let newMarkers: MarkerWithRoute[] | null = null;
       if (markers.length === 0) {
         const locations = (await Promise.allSettled(
           placeNames.map((place) =>
@@ -154,12 +160,22 @@ const Map: React.FC<MapProps> = ({ placeNames, onMapLoaded }) => {
       );
       newRoutes.forEach((route, index) => {
         newMarkers[index].routeDistance =
-          route.routes[0].legs[0].distance.value;
+          route.routes[0]?.legs[0].distance.value;
         newMarkers[index].routeDuration =
-          route.routes[0].legs[0].duration.value;
+          route.routes[0]?.legs[0].duration.value;
+        newMarkers[index].route = route;
       });
-      setRoutes(newRoutes);
-      dispatch(markersActions.update(newMarkers));
+      newMarkers.sort((a, b) =>
+        a.routeDuration ? a.routeDuration - (b.routeDuration ?? 0) : -1
+      );
+      setRoutes(newMarkers.map((marker) => marker.route));
+      dispatch(
+        markersActions.update(
+          newMarkers.map(({ route, ...rest }) => {
+            return rest;
+          })
+        )
+      );
       onMapLoaded(Map);
       const photos = await getPhotos(
         newMarkers.map((marker) => marker.placeId)

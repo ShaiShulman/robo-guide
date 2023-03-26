@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Provider, useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 
 import Map from "./features/map/Map";
 import "./App.css";
@@ -7,7 +7,7 @@ import PromptForm from "./features/prompt/PromptForm";
 import List from "./features/list/List";
 import Spinner from "./components/Spinner";
 import { getSuggestions } from "./features/suggestions/openai-wrapper";
-import Navbar from "./features/list/Navbar";
+import Navigation from "./components/Navigation";
 import Error from "./components/Error";
 import getDispatch from "./lib/get-dispatch";
 import { appActions, selectAppState } from "./store/appSlice";
@@ -38,27 +38,29 @@ function App() {
   };
 
   return (
-    <div className="App">
-      <main>
-        {appState.mode === "Prompt" && (
-          <PromptForm onFormSubmit={handleFormSubmitted} />
-        )}
-        {appState.mode === "Loading" && (
-          <Spinner message="Beep boop\nThe robot is gathering suggestions..." />
-        )}
-        {appState.mode === "Result" && (
-          <div className="container">
-            <Navbar />
-            <List map={MapRef} />
+    <>
+      <Navigation />
+      <div id="App">
+        <main>
+          {appState.mode === "Prompt" && (
+            <PromptForm onFormSubmit={handleFormSubmitted} />
+          )}
+          {appState.mode === "Loading" && (
+            <Spinner message="Beep boop\nThe robot is gathering suggestions..." />
+          )}
+          {appState.mode === "Result" && (
+            <div className="container">
+              <List map={MapRef} />
 
-            <div className="map-section">
-              <Map placeNames={places} onMapLoaded={handleMapLoaded} />
+              <div className="map-section">
+                <Map placeNames={places} onMapLoaded={handleMapLoaded} />
+              </div>
             </div>
-          </div>
-        )}
-        {appState.mode === "Error" && <Error />}
-      </main>
-    </div>
+          )}
+          {appState.mode === "Error" && <Error />}
+        </main>
+      </div>
+    </>
   );
 }
 

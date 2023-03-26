@@ -66,11 +66,19 @@ export const splitPlaceName = (place: string) => {
     : [parts[0], place.slice(parts[0].length + 1)];
 };
 
+export const numberedMarker = (number: number) => ({
+  url: `https://maps.google.com/mapfiles/kml/paddle/${
+    number > 10 ? number - 10 : number
+  }.png`,
+  // scaledSize: new window.google.maps.Size(40, 40),
+  // labelOrigin: new window.google.maps.Point(20, 13),
+});
+
 export const getDistances = async (
   origin: Coord,
   destinations: Coord[],
   travelMode: TravelMode
-) => {
+): Promise<google.maps.DirectionsResult[]> => {
   const directionsService = new window.google.maps.DirectionsService();
   const originLatLng = new window.google.maps.LatLng(origin.lat, origin.lng);
   const destinationsLatLng = destinations.map(

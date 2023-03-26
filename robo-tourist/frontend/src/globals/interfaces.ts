@@ -11,7 +11,6 @@ export interface MarkerInfo {
   placeId?: string;
   routeDistance?: number;
   routeDuration?: number;
-  route?: google.maps.DirectionsResult;
   url?: string;
   selected?: boolean;
 }

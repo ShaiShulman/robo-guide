@@ -21,6 +21,7 @@ export const ViewSlice = createSlice({
     setdirections: (state, action: PayloadAction<boolean>) => {
       return { ...state, directions: action.payload };
     },
+    toggleDirections: (state) => ({ ...state, directions: !state.directions }),
     reset: (state) => {
       return initialState;
     },

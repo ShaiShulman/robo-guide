@@ -11,7 +11,12 @@ const Error: React.FC = (props) => {
     <Alert variant="danger">
       {appState.error}
       <br />
-      <Alert.Link onClick={() => dispatch(appActions.setMode("Prompt"))}>
+      <Alert.Link
+        onClick={() => {
+          dispatch(appActions.setError(null));
+          dispatch(appActions.setMode("Prompt"));
+        }}
+      >
         Click
       </Alert.Link>{" "}
       to reset.

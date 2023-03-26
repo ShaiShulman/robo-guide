@@ -45,7 +45,7 @@ const List: React.FC<ListProps> = ({ map }) => {
               }`}
               ref={refsMarkers[index]}
             >
-              <img srcSet={marker.imageUrl} />
+              <img srcSet={marker.imageUrl} className="place" />
               <div className="item-info">
                 <h2 className="item-title">{marker.title}</h2>
                 <div className="item-description">{marker.desc}</div>
