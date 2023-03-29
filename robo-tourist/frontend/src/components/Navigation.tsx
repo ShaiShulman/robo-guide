@@ -1,12 +1,4 @@
-import {
-  Button,
-  Container,
-  FloatingLabel,
-  Form,
-  Nav,
-  Navbar,
-  NavDropdown,
-} from "react-bootstrap";
+import { Nav, Navbar, NavDropdown } from "react-bootstrap";
 import { useSelector } from "react-redux";
 import getDispatch from "../lib/get-dispatch";
 import { appActions } from "../store/appSlice";
@@ -14,6 +6,7 @@ import { markersActions } from "../store/markerSlice";
 import { promptActions, selectPrompt } from "../store/promptSlice";
 import { selectView, viewActions } from "../store/viewSlice";
 import brandLogo from "../../assets/brand-logo.png";
+import { TravelMode } from "../globals/interfaces";
 // import "./Navbar.css";
 
 const Navigation: React.FC = ({}) => {
@@ -33,6 +26,15 @@ const Navigation: React.FC = ({}) => {
     e.preventDefault();
   };
 
+  const toggleCompact = (e: any) => {
+    dispatch(viewActions.toggleCompact());
+    e.preventDefault();
+  };
+
+  const setTravelMode = (value: TravelMode) => {
+    dispatch(promptActions.updateTravelMode(value));
+  };
+
   return (
     // <div className="navbar-container">
     <Navbar collapseOnSelect expand="lg" bg="dark" variant="dark">
@@ -48,17 +50,28 @@ const Navigation: React.FC = ({}) => {
           </Nav.Link>
           <NavDropdown title={`Travel mode: ${prompt.travelMode}`}>
             {prompt.travelMode !== "Walking" && (
-              <NavDropdown.Item>Walking</NavDropdown.Item>
+              <NavDropdown.Item onClick={() => setTravelMode("Walking")}>
+                Walking
+              </NavDropdown.Item>
             )}
             {prompt.travelMode !== "Public Transport" && (
-              <NavDropdown.Item>Public Transport</NavDropdown.Item>
+              <NavDropdown.Item
+                onClick={() => setTravelMode("Public Transport")}
+              >
+                Public Transport
+              </NavDropdown.Item>
             )}
             {prompt.travelMode !== "Driving" && (
-              <NavDropdown.Item>Driving</NavDropdown.Item>
+              <NavDropdown.Item onClick={() => setTravelMode("Driving")}>
+                Driving
+              </NavDropdown.Item>
             )}
           </NavDropdown>
           <Nav.Link href="#" onClick={toggleDirections}>
             Directions: {view.directions ? "show" : "hide"}
+          </Nav.Link>
+          <Nav.Link href="#" onClick={toggleCompact}>
+            View: {view.compact ? "compact" : "full"}
           </Nav.Link>
         </Nav>
       </Navbar.Collapse>

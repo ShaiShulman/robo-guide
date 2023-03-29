@@ -1,5 +1,6 @@
 import React from "react";
 import "./spinner.css";
+import workingImg from "../assets/working-robot.png";
 
 interface SpinnerProps {
   message: string;
@@ -13,6 +14,9 @@ const Spinner: React.FC<SpinnerProps> = ({ message }) => {
         {message.split("\\n").map((line, i) => (
           <p key={i}>{line}</p>
         ))}
+      </div>
+      <div className="spinner-image">
+        <img src={workingImg} />
       </div>
     </div>
   );

@@ -3,7 +3,6 @@ import { travelModeIcons } from "./const";
 import { selectImages, selectMarkers } from "../../store/markerSlice";
 import { useSelector } from "react-redux";
 import { selectPrompt } from "../../store/promptSlice";
-import dispatch from "../../lib/get-dispatch";
 import { selectView, viewActions } from "../../store/viewSlice";
 import getDispatch from "../../lib/get-dispatch";
 import React, { useEffect, useMemo } from "react";
@@ -36,13 +35,16 @@ const List: React.FC<ListProps> = ({ map }) => {
         {markers.map((marker, index) => (
           <li
             key={index}
-            onMouseEnter={() => dispatch(viewActions.setSelected(index))}
-            onMouseLeave={() => dispatch(viewActions.setSelected(null))}
+            onClick={() =>
+              dispatch(
+                viewActions.setSelected(view.selected === index ? null : index)
+              )
+            }
           >
             <div
               className={`list-item ${
                 view.selected === index ? "selected" : ""
-              }`}
+              } ${!view.compact || view.selected === index ? "expanded" : ""}`}
               ref={refsMarkers[index]}
             >
               <img srcSet={marker.imageUrl} className="place" />

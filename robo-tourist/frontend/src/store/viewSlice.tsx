@@ -4,11 +4,13 @@ import { RootState } from "./store";
 export interface ViewSliceProps {
   selected: number | null;
   directions: boolean;
+  compact: boolean;
 }
 
 const initialState: ViewSliceProps = {
   selected: null,
   directions: true,
+  compact: true,
 };
 
 export const ViewSlice = createSlice({
@@ -18,9 +20,13 @@ export const ViewSlice = createSlice({
     setSelected: (state, action: PayloadAction<number | null>) => {
       return { ...state, selected: action.payload };
     },
-    setdirections: (state, action: PayloadAction<boolean>) => {
+    setDirections: (state, action: PayloadAction<boolean>) => {
       return { ...state, directions: action.payload };
     },
+    toggleCompact: (state) => ({
+      ...state,
+      compact: !state.compact,
+    }),
     toggleDirections: (state) => ({ ...state, directions: !state.directions }),
     reset: (state) => {
       return initialState;

@@ -38,7 +38,7 @@
   list-style: none;
 }
 
-.list-section ul {
+.list-section ul li {
   width: 100%;
 }
 
@@ -53,6 +53,12 @@
   border-radius: 10px 0 0 10px;
   background-color: lightgray;
   width: 100%;
+  cursor: pointer;
+}
+
+.list-item.expanded {
+  max-height: 200px;
+  transition: max-height 300ms ease-in;
 }
 
 .list-item:hover,
@@ -62,13 +68,21 @@
 
 /* Style for image in list item */
 .list-item img.place {
+  width: 70px;
+  max-height: 70px;
+}
+
+.list-item.expanded img.place {
+  width: 200px;
   max-height: 200px;
-  max-width: 200px;
+  transition: width 300ms;
 }
 
 .item-info {
   padding: 20px;
+  width: 100%;
   position: relative;
+  transition: width 300ms;
 }
 
 .item-distance {
@@ -96,6 +110,11 @@
 .item-description {
   font-size: 16px;
   margin-top: 10px;
+  display: none;
+}
+
+.list-item.expanded .item-description {
+  display: block;
 }
 
 /* Set style for map section */
@@ -125,12 +144,18 @@
   }
 
   .list-item {
-    height: 150px;
+    height: 70px;
+    transition: height 300ms ease-in;
   }
 
-  .list-item img.place {
-    max-height: 100px;
-    max-width: 100px;
+  .list-item.expanded {
+    height: 120px;
+    transition: height 300ms ease-in;
+  }
+
+  .list-item.expanded img.place {
+    max-height: 120px;
+    width: 120px;
   }
 
   .item-title {

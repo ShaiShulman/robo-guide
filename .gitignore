@@ -3,3 +3,4 @@ node_modules
 .env
 aws
 awscliv2.zip
+robo-tourist/lambda/dist
