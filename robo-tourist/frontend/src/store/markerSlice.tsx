@@ -1,6 +1,7 @@
 import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { getImagesFromBackend } from "../features/list/google-photos";
 import { MarkerInfo } from "../globals/interfaces";
-import { RootState } from "./store";
+import { AppThunk, RootState } from "./store";
 
 interface MarkerInfoProps {
   items: MarkerInfo[];
@@ -27,6 +28,19 @@ export const MarkersSlice = createSlice({
     },
   },
 });
+
+export const updateMarkerPhotos = (): AppThunk => {
+  return async (dispatch, getState) => {
+    const places = getState().markers.items.map((marker) => marker.title);
+    const target = getState().prompt.target;
+    const preference = getState().prompt.preference;
+    const images = (await getImagesFromBackend(places, target, preference)).map(
+      (item) => item.image
+    );
+    console.log(images);
+    dispatch(markersActions.updatePhotos(images));
+  };
+};
 
 export const selectMarkers = createSelector(
   (state: RootState) => state.markers,

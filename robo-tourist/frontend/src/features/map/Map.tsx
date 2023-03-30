@@ -22,7 +22,11 @@ import { Spinner } from "react-bootstrap";
 import bullseyeIcon from "../../assets/bullseye.svg";
 import { useSelector } from "react-redux";
 import { selectPrompt } from "../../store/promptSlice";
-import { markersActions, selectMarkers } from "../../store/markerSlice";
+import {
+  markersActions,
+  selectMarkers,
+  updateMarkerPhotos,
+} from "../../store/markerSlice";
 import getDispatch from "../../lib/get-dispatch";
 import { selectView, viewActions } from "../../store/viewSlice";
 
@@ -144,7 +148,6 @@ const Map: React.FC<MapProps> = ({ placeNames, onMapLoaded }) => {
         const bounds = getBounds(geometry);
         setMapBounds(bounds);
         Map.fitBounds(bounds);
-        // dispatch(markersActions.create(markers));
         origin = await getPlace(
           promptInfo.origin || promptInfo.target,
           promptInfo.target,
@@ -182,7 +185,9 @@ const Map: React.FC<MapProps> = ({ placeNames, onMapLoaded }) => {
       );
       dispatch(markersActions.updatePhotos(photos));
     };
-    setMap().catch((err) => console.error(err));
+    setMap()
+      .then((result) => dispatch(updateMarkerPhotos()))
+      .catch((err) => console.error(err));
   }, [placeNames, promptInfo.target, promptInfo.travelMode, Map]);
 
   useEffect(() => {
