@@ -61,13 +61,6 @@ const Map: React.FC<MapProps> = ({ placeNames, onMapLoaded }) => {
   const markers = useSelector(selectMarkers);
   const dispatch = getDispatch();
 
-  const getPhotos = async (placeIds: string[]) => {
-    const urls = (await Promise.allSettled(
-      placeIds.map((id) => getPhoto(id, Map))
-    )) as any[];
-    return urls.map((url) => url.value);
-  };
-
   const handleMarkerClick = (index: number) => {
     dispatch(viewActions.setSelected(view.selected === index ? null : index));
   };
@@ -163,9 +156,9 @@ const Map: React.FC<MapProps> = ({ placeNames, onMapLoaded }) => {
       );
       newRoutes.forEach((route, index) => {
         newMarkers[index].routeDistance =
-          route.routes[0]?.legs[0].distance.value;
+          route?.routes[0]?.legs[0].distance.value;
         newMarkers[index].routeDuration =
-          route.routes[0]?.legs[0].duration.value;
+          route?.routes[0]?.legs[0].duration.value;
         newMarkers[index].route = route;
       });
       newMarkers.sort((a, b) =>
@@ -180,13 +173,10 @@ const Map: React.FC<MapProps> = ({ placeNames, onMapLoaded }) => {
         )
       );
       onMapLoaded(Map);
-      const photos = await getPhotos(
-        newMarkers.map((marker) => marker.placeId)
-      );
-      dispatch(markersActions.updatePhotos(photos));
+      dispatch(updateMarkerPhotos);
     };
     setMap()
-      .then((result) => dispatch(updateMarkerPhotos()))
+      .then((result) => dispatch(updateMarkerPhotos(Map)))
       .catch((err) => console.error(err));
   }, [placeNames, promptInfo.target, promptInfo.travelMode, Map]);
 

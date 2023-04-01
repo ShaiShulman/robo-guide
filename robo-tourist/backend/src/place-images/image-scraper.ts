@@ -3,14 +3,17 @@ import puppeteer, { Browser } from "puppeteer";
 import { getPlaceNameVariations } from "./image-scraper-utils";
 
 export const getImagesFromGoogleSearch = async (
-  places: string[]
+  places: string[],
+  target: string
 ): Promise<(string | null)[]> => {
   try {
     const imageUrls: string[] = [];
 
     const browser = await puppeteer.launch();
 
-    const promises = places.map((place) => getSingleImage(place, browser));
+    const promises = places.map((place) =>
+      getSingleImage(place, target, browser)
+    );
 
     const urls = ((await Promise.allSettled(promises)) as any[]).map(
       (result) =>
@@ -24,14 +27,20 @@ export const getImagesFromGoogleSearch = async (
   }
 };
 
-const searchUrl = (query: string) =>
-  `https://www.google.com/search?q=${encodeURIComponent(query)}&tbm=isch`;
+const searchUrl = (query: string, target: string) =>
+  `https://www.google.com/search?q=${encodeURIComponent(
+    query.includes(target) ? query : query + "," + target
+  )}&tbm=isch`;
 
-const getSingleImage = async (place: string, browser: Browser) => {
+const getSingleImage = async (
+  place: string,
+  target: string,
+  browser: Browser
+) => {
   const page = await browser.newPage();
 
   try {
-    await page.goto(searchUrl(place), { waitUntil: "networkidle2" });
+    await page.goto(searchUrl(place, target), { waitUntil: "networkidle2" });
 
     const html = await page.content();
     const $ = cheerio.load(html);

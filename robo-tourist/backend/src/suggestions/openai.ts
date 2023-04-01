@@ -34,7 +34,7 @@ export const getSuggestions = async (target: string, preference?: string) => {
     }),
   });
   if (!response.ok)
-    throw `Error accessing GPT-3! Status code: ${response.status}.`;
+    throw new Error(`Error accessing GPT-3! Status code: ${response.status}.`);
   const message = (await response.json()).choices[0].message.content;
   if (message) return splitResponse(message as string);
   else throw new Error("Error processing GPT-3 response!");

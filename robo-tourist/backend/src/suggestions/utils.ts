@@ -1,5 +1,6 @@
 export const splitResponse = (response: string) => {
   const regex = /^\d+\. (.*)$/gm;
+
   const matches = response.matchAll(regex);
   const items: string[] = [];
 
