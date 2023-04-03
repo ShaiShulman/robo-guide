@@ -52,7 +52,6 @@ export const updateMarkerPhotos = (Map: any): AppThunk => {
       getState().markers.items.map((item) => item.placeId),
       Map
     );
-    dispatch(markersActions.updatePhotos(gmapPhotos));
     const emptyImagesIdx: number[] = gmapPhotos.reduce((acc, curr, idx) => {
       if (!curr || curr.length === 0) acc.push(idx);
       return acc;
@@ -61,6 +60,15 @@ export const updateMarkerPhotos = (Map: any): AppThunk => {
     const missingPhotosIdx = Array.from(
       new Set(emptyImagesIdx.concat(findNonUniqueIndexes(gmapPhotos)))
     );
+
+    dispatch(
+      markersActions.updatePhotos(
+        gmapPhotos.map((item, idx) =>
+          missingPhotosIdx.includes(idx) ? null : item
+        )
+      )
+    );
+
     const missingPhotosNames = getState()
       .markers.items.map((marker) => marker.title)
       .map((item, index) => {

@@ -59,7 +59,7 @@ export async function getPhoto(placeId, map) {
 }
 
 export const splitPlaceName = (place: string) => {
-  const SPLIT_CHARS = /(\s–)|(\s:)|(\s-)/;
+  const SPLIT_CHARS = /(–\s)|(:\s)|(-\s)/;
   const parts = place.split(SPLIT_CHARS, 2);
   return parts.length === 1
     ? [parts[0], ""]

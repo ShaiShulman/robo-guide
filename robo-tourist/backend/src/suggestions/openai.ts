@@ -21,7 +21,7 @@ export const getSuggestions = async (target: string, preference?: string) => {
     preference && preference.length > 3
       ? "and I'm looking for " + preference
       : ""
-  }. Give me 10 recommendations on places to visit and why i should visit each one.`;
+  }. Give me 10 recommendations on places to visit and provide two paragarph describing the place and why i should visit each one.`;
   const response = await fetch(OPENAI_URL, {
     method: "POST",
     headers: {

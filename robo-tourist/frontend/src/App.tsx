@@ -43,7 +43,9 @@ function App() {
       <div id="App">
         <main>
           {appState.mode === "Prompt" && (
-            <PromptForm onFormSubmit={handleFormSubmitted} />
+            <div className="container">
+              <PromptForm onFormSubmit={handleFormSubmitted} />
+            </div>
           )}
           {appState.mode === "Loading" && (
             <Spinner message="Beep boop\nThe robot is gathering suggestions..." />

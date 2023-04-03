@@ -1,5 +1,6 @@
 #root {
   width: 100%;
+  height: 100vh;
 }
 
 #app {
@@ -16,10 +17,10 @@
 
 /* Set height and width of container */
 .container {
-  display: flex;
-  flex-direction: column;
-  height: calc(100vh - 50px);
+  height: calc(100vh - 60px);
   width: 100%;
+  position: relative;
+  padding: 0;
 }
 
 /* Set style for list section */
@@ -27,7 +28,7 @@
   display: flex;
   overflow-y: scroll;
   padding: 10px;
-  height: calc(100vh - 400px);
+  height: calc(100vh - 360px);
 }
 
 .list-section ul {
@@ -50,14 +51,14 @@
   flex-direction: row;
   text-align: left;
   margin-bottom: 20px;
-  border-radius: 10px 0 0 10px;
   background-color: lightgray;
   width: 100%;
   cursor: pointer;
 }
 
 .list-item.expanded {
-  max-height: 200px;
+  /* max-height: 200px; */
+  height: fit-content;
   transition: max-height 300ms ease-in;
 }
 
@@ -67,12 +68,12 @@
 }
 
 /* Style for image in list item */
-.list-item img.place {
+.list-item .place-image {
   width: 70px;
   max-height: 70px;
 }
 
-.list-item.expanded img.place {
+.list-item.expanded .place-image {
   width: 200px;
   max-height: 200px;
   transition: width 300ms;
@@ -111,6 +112,7 @@
   font-size: 16px;
   margin-top: 10px;
   display: none;
+  height: fit-content;
 }
 
 .list-item.expanded .item-description {
@@ -119,7 +121,7 @@
 
 /* Set style for map section */
 .map-section {
-  height: 350px;
+  height: 300px;
   width: 100%;
   background-color: #eee;
   padding: 2px;
@@ -149,11 +151,11 @@
   }
 
   .list-item.expanded {
-    height: 120px;
+    /* height: 120px; */
     transition: height 300ms ease-in;
   }
 
-  .list-item.expanded img.place {
+  .list-item.expanded .place-image {
     max-height: 120px;
     width: 120px;
   }
@@ -173,4 +175,9 @@ Form {
   border-radius: 10px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
   padding: 20px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: calc(100vw - 30px);
 }

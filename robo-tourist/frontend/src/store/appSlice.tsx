@@ -1,6 +1,8 @@
 import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { AppMode } from "../globals/interfaces";
-import { RootState } from "./store";
+import { AppThunk, RootState } from "./store";
+import { markersActions } from "./markerSlice";
+import { viewActions } from "./viewSlice";
 
 export interface AppSliceProps {
   mode: AppMode;
@@ -28,6 +30,14 @@ export const AppSlice = createSlice({
     }),
   },
 });
+
+export const resetAppState = (): AppThunk => {
+  return async (dispatch, getState) => {
+    dispatch(viewActions.reset());
+    dispatch(markersActions.reset());
+    dispatch(appActions.setMode("Prompt"));
+  };
+};
 
 export const selectAppState = createSelector(
   (state: RootState) => state.app,

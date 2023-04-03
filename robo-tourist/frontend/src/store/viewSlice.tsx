@@ -17,20 +17,20 @@ export const ViewSlice = createSlice({
   name: "view",
   initialState,
   reducers: {
-    setSelected: (state, action: PayloadAction<number | null>) => {
-      return { ...state, selected: action.payload };
-    },
-    setDirections: (state, action: PayloadAction<boolean>) => {
-      return { ...state, directions: action.payload };
-    },
+    setSelected: (state, action: PayloadAction<number | null>) => ({
+      ...state,
+      selected: action.payload,
+    }),
+    setDirections: (state, action: PayloadAction<boolean>) => ({
+      ...state,
+      directions: action.payload,
+    }),
     toggleCompact: (state) => ({
       ...state,
       compact: !state.compact,
     }),
     toggleDirections: (state) => ({ ...state, directions: !state.directions }),
-    reset: (state) => {
-      return initialState;
-    },
+    reset: (state) => ({ ...state, selected: null }),
   },
 });
 

@@ -1,7 +1,7 @@
 import { Nav, Navbar, NavDropdown } from "react-bootstrap";
 import { useSelector } from "react-redux";
 import getDispatch from "../lib/get-dispatch";
-import { appActions } from "../store/appSlice";
+import { appActions, resetAppState, selectAppState } from "../store/appSlice";
 import { markersActions } from "../store/markerSlice";
 import { promptActions, selectPrompt } from "../store/promptSlice";
 import { selectView, viewActions } from "../store/viewSlice";
@@ -12,9 +12,10 @@ import { TravelMode } from "../globals/interfaces";
 const Navigation: React.FC = ({}) => {
   const dispatch = getDispatch();
 
+  const appState = useSelector(selectAppState);
+
   const newSearch = (e: any) => {
-    dispatch(markersActions.reset());
-    dispatch(appActions.setMode("Prompt"));
+    dispatch(resetAppState());
     e.preventDefault();
   };
 
@@ -37,7 +38,7 @@ const Navigation: React.FC = ({}) => {
 
   return (
     // <div className="navbar-container">
-    <Navbar collapseOnSelect expand="lg" bg="dark" variant="dark">
+    <Navbar expand="lg" bg="dark" variant="dark">
       <Navbar.Brand href="#">
         {/* <img src={brandLogo} alt="logo" /> */}
         Robo-Guide
@@ -48,31 +49,35 @@ const Navigation: React.FC = ({}) => {
           <Nav.Link href="#" onClick={newSearch}>
             New search
           </Nav.Link>
-          <NavDropdown title={`Travel mode: ${prompt.travelMode}`}>
-            {prompt.travelMode !== "Walking" && (
-              <NavDropdown.Item onClick={() => setTravelMode("Walking")}>
-                Walking
-              </NavDropdown.Item>
-            )}
-            {prompt.travelMode !== "Public Transport" && (
-              <NavDropdown.Item
-                onClick={() => setTravelMode("Public Transport")}
-              >
-                Public Transport
-              </NavDropdown.Item>
-            )}
-            {prompt.travelMode !== "Driving" && (
-              <NavDropdown.Item onClick={() => setTravelMode("Driving")}>
-                Driving
-              </NavDropdown.Item>
-            )}
-          </NavDropdown>
-          <Nav.Link href="#" onClick={toggleDirections}>
-            Directions: {view.directions ? "show" : "hide"}
-          </Nav.Link>
-          <Nav.Link href="#" onClick={toggleCompact}>
-            View: {view.compact ? "compact" : "full"}
-          </Nav.Link>
+          {appState.mode === "Result" && (
+            <>
+              <NavDropdown title={`Travel mode: ${prompt.travelMode}`}>
+                {prompt.travelMode !== "Walking" && (
+                  <NavDropdown.Item onClick={() => setTravelMode("Walking")}>
+                    Walking
+                  </NavDropdown.Item>
+                )}
+                {prompt.travelMode !== "Public Transport" && (
+                  <NavDropdown.Item
+                    onClick={() => setTravelMode("Public Transport")}
+                  >
+                    Public Transport
+                  </NavDropdown.Item>
+                )}
+                {prompt.travelMode !== "Driving" && (
+                  <NavDropdown.Item onClick={() => setTravelMode("Driving")}>
+                    Driving
+                  </NavDropdown.Item>
+                )}
+              </NavDropdown>
+              <Nav.Link href="#" onClick={toggleDirections}>
+                Directions: {view.directions ? "show" : "hide"}
+              </Nav.Link>
+              <Nav.Link href="#" onClick={toggleCompact}>
+                View: {view.compact ? "compact" : "full"}
+              </Nav.Link>
+            </>
+          )}
         </Nav>
       </Navbar.Collapse>
     </Navbar>
