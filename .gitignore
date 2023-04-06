@@ -4,3 +4,4 @@ node_modules
 aws
 awscliv2.zip
 robo-tourist/lambda/dist
+roboGuideKeyPair2.pem

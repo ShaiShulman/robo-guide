@@ -6,11 +6,19 @@ export const getImagesFromGoogleSearch = async (
   places: string[],
   target: string
 ): Promise<(string | null)[]> => {
+  var browser: Browser;
+
   try {
-    const imageUrls: string[] = [];
+    var browser = await puppeteer.launch({
+      executablePath: "/usr/bin/google-chrome",
+      headless: true,
+      args: ["--no-sandbox", "--disable-setuid-sandbox"],
+    });
+  } catch (error: any) {
+    throw error;
+  }
 
-    const browser = await puppeteer.launch();
-
+  try {
     const promises = places.map((place) =>
       getSingleImage(place, target, browser)
     );
@@ -24,6 +32,7 @@ export const getImagesFromGoogleSearch = async (
   } catch (error: any) {
     throw error;
   } finally {
+    await browser?.close();
   }
 };
 
@@ -49,7 +58,9 @@ const getSingleImage = async (
   } catch (error: any) {
     console.log(error.message);
   } finally {
-    page.close();
+    try {
+      await page.close();
+    } catch (error) {}
   }
 };
 
