@@ -1,6 +1,6 @@
 export type AppMode = "Prompt" | "Loading" | "Result" | "Error";
 
-export type TravelMode = "Walking" | "Public Transport" | "Driving";
+export type TravelMode = "Walking" | "Transit" | "Driving" | "Bicycling";
 
 export interface MarkerInfo {
   title: string;

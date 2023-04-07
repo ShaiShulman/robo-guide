@@ -14,7 +14,8 @@ export default defineConfig({
     proxy: {
       // Proxy options here
       "/api": {
-        target: "http://ec2-54-80-119-246.compute-1.amazonaws.com:2500/",
+        // target: "http://ec2-54-80-119-246.compute-1.amazonaws.com:2500/",
+        target: "http://localhost:2500",
         changeOrigin: true,
       },
     },

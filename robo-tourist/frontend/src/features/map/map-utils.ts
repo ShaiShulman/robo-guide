@@ -74,7 +74,7 @@ export const numberedMarker = (number: number) => ({
   // labelOrigin: new window.google.maps.Point(20, 13),
 });
 
-export const getDistances = async (
+export const getRouteObjects = async (
   origin: Coord,
   destinations: Coord[],
   travelMode: TravelMode
@@ -99,8 +99,10 @@ export const getDistances = async (
             travelMode:
               travelMode === "Driving"
                 ? window.google.maps.TravelMode.DRIVING
-                : travelMode === "Public Transport"
+                : travelMode === "Transit"
                 ? window.google.maps.TravelMode.TRANSIT
+                : travelMode === "Bicycling"
+                ? window.google.maps.TravelMode.BICYCLING
                 : window.google.maps.TravelMode.WALKING,
           };
           directionsService.route(request, (response, status) => {

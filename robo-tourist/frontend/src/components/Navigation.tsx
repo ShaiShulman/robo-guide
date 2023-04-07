@@ -57,10 +57,8 @@ const Navigation: React.FC = ({}) => {
                     Walking
                   </NavDropdown.Item>
                 )}
-                {prompt.travelMode !== "Public Transport" && (
-                  <NavDropdown.Item
-                    onClick={() => setTravelMode("Public Transport")}
-                  >
+                {prompt.travelMode !== "Transit" && (
+                  <NavDropdown.Item onClick={() => setTravelMode("Transit")}>
                     Public Transport
                   </NavDropdown.Item>
                 )}

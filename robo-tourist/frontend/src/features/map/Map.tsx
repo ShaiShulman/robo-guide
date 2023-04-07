@@ -1,14 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import {
   getBounds,
-  getDistances,
-  getPhoto,
   getPlace,
   numberedMarker,
   splitPlaceName,
 } from "./map-utils";
 import { Coord } from "../../globals/interfaces";
-import { Place } from "./interfaces";
+import { Directions, MarkerWithDirections, Place } from "./interfaces";
 import { MarkerInfo } from "../../globals/interfaces";
 import { Marker } from "@react-google-maps/api";
 import { GOOGLE_MAPS_API_KEY } from "./const";
@@ -29,14 +27,11 @@ import {
 } from "../../store/markerSlice";
 import getDispatch from "../../lib/get-dispatch";
 import { selectView, viewActions } from "../../store/viewSlice";
+import { updateDirections } from "./directions-utils";
 
 interface MapProps {
   placeNames: string[];
   onMapLoaded: (Map: any) => void;
-}
-
-interface MarkerWithRoute extends MarkerInfo {
-  route?: google.maps.DirectionsResult;
 }
 
 const LIBRARIES = ["places"] as any;
@@ -45,7 +40,7 @@ const Map: React.FC<MapProps> = ({ placeNames, onMapLoaded }) => {
   const [mapBounds, setMapBounds] = useState<google.maps.LatLngBounds>();
   const [originCoord, setOriginCoord] = useState<Coord>();
   const [Map, setMap] = useState(null);
-  const [routes, setRoutes] = useState<google.maps.DirectionsResult[]>([]);
+  const [directions, setDirections] = useState<Directions>({});
 
   const windowWidth = useRef(window.innerWidth);
   const markerRefs = useRef([]);
@@ -96,7 +91,7 @@ const Map: React.FC<MapProps> = ({ placeNames, onMapLoaded }) => {
         )}
         {view.directions && view.selected !== null && (
           <DirectionsRenderer
-            directions={routes[view.selected]}
+            directions={directions[view.selected][promptInfo.travelMode]}
             options={{ suppressMarkers: true }}
           />
         )}
@@ -105,11 +100,11 @@ const Map: React.FC<MapProps> = ({ placeNames, onMapLoaded }) => {
   };
 
   useEffect(() => {
-    if (placeNames.length === 0 || !Map || markers.length) return;
+    if (placeNames.length === 0 || !Map) return;
     const setMap = async () => {
       const geocoder = new google.maps.Geocoder();
       let origin: Place | null = null;
-      let newMarkers: MarkerWithRoute[] | null = null;
+      let newMarkers: MarkerWithDirections[] | null = null;
       if (markers.length === 0) {
         const locations = (await Promise.allSettled(
           placeNames.map((place) =>
@@ -148,26 +143,32 @@ const Map: React.FC<MapProps> = ({ placeNames, onMapLoaded }) => {
         );
         if (promptInfo.origin && origin)
           setOriginCoord({ lat: origin.lat, lng: origin.lng });
-      } else newMarkers = [...markers];
-      const newRoutes = await getDistances(
-        { lat: (originCoord || origin).lat, lng: (originCoord || origin).lng },
-        newMarkers.map((m) => ({ lat: m.lat, lng: m.lng })),
-        promptInfo.travelMode
+      } else newMarkers = structuredClone(markers);
+      const newDirections = await updateDirections(
+        newMarkers,
+        directions,
+        promptInfo.travelMode,
+        { lat: (originCoord || origin).lat, lng: (originCoord || origin).lng }
       );
-      newRoutes.forEach((route, index) => {
-        newMarkers[index].routeDistance =
-          route?.routes[0]?.legs[0].distance.value;
-        newMarkers[index].routeDuration =
-          route?.routes[0]?.legs[0].duration.value;
-        newMarkers[index].route = route;
-      });
+      for (const marker of newMarkers) {
+        (newMarkers[newMarkers.indexOf(marker)].routeDistance as number) =
+          newDirections[newMarkers.indexOf(marker)][
+            promptInfo.travelMode
+          ]?.routes[0]?.legs[0].distance.value;
+        newMarkers[newMarkers.indexOf(marker)].routeDuration =
+          newDirections[newMarkers.indexOf(marker)][
+            promptInfo.travelMode
+          ]?.routes[0]?.legs[0].duration.value;
+        newMarkers[newMarkers.indexOf(marker)].directions =
+          newDirections[newMarkers.indexOf(marker)];
+      }
       newMarkers.sort((a, b) =>
         a.routeDuration ? a.routeDuration - (b.routeDuration ?? 0) : -1
       );
-      setRoutes(newMarkers.map((marker) => marker.route));
+      setDirections(newMarkers.map((marker) => marker.directions));
       dispatch(
         markersActions.update(
-          newMarkers.map(({ route, ...rest }) => {
+          newMarkers.map(({ directions: route, ...rest }) => {
             return rest;
           })
         )
