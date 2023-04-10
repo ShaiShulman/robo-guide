@@ -1,12 +1,12 @@
 import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { TravelMode } from "../globals/interfaces";
+import { TravelModeType } from "../globals/interfaces";
 import { RootState } from "./store";
 
 interface PromptSliceProps {
   target: string;
   preference: string;
   origin: string;
-  travelMode: TravelMode;
+  travelMode: TravelModeType;
 }
 
 const initialState: PromptSliceProps = {
@@ -23,7 +23,7 @@ export const PromptSlice = createSlice({
     update: (state, action: PayloadAction<PromptSliceProps>) => {
       return action.payload;
     },
-    updateTravelMode: (state, action: PayloadAction<TravelMode>) => {
+    updateTravelMode: (state, action: PayloadAction<TravelModeType>) => {
       return { ...state, travelMode: action.payload };
     },
   },

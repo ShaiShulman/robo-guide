@@ -1,4 +1,4 @@
-import { MarkerInfo, TravelMode } from "../../globals/interfaces";
+import { MarkerInfo, TravelModeType } from "../../globals/interfaces";
 
 export interface Place {
   lat: number;
@@ -11,7 +11,7 @@ export interface MarkerWithDirections extends MarkerInfo {
 }
 
 export type MarkerDirections = Record<
-  TravelMode,
+  TravelModeType,
   google.maps.DirectionsResult | null
 >;
 

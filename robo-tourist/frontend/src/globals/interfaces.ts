@@ -1,6 +1,15 @@
 export type AppMode = "Prompt" | "Loading" | "Result" | "Error";
 
-export type TravelMode = "Walking" | "Transit" | "Driving" | "Bicycling";
+// export type TravelMode = "Walking" | "Transit" | "Driving" | "Bicycling";
+
+export const TravelMode = {
+  Walking: "Walking",
+  Transit: "Transit",
+  Driving: "Driving",
+  Bicycling: "Bicycling",
+} as const;
+
+export type TravelModeType = typeof TravelMode[keyof typeof TravelMode];
 
 export interface MarkerInfo {
   title: string;

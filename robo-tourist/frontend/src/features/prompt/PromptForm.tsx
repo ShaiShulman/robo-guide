@@ -1,6 +1,6 @@
 import { FormEventHandler, useEffect, useState } from "react";
 import { Button, Form } from "react-bootstrap";
-import { TravelMode } from "../../globals/interfaces";
+import { TravelMode, TravelModeType } from "../../globals/interfaces";
 import { AppDispatch } from "../../store/store";
 import { promptActions, selectPrompt } from "../../store/promptSlice";
 import { useDispatch, useSelector } from "react-redux";
@@ -13,7 +13,7 @@ const PromptForm: React.FC<PromptFormProps> = (props) => {
   const [prompt, setPrompt] = useState<string>("");
   const [preference, setPreference] = useState<string>("");
   const [origin, setOrigin] = useState("");
-  const [travelMode, setTravelMode] = useState<TravelMode>("Walking");
+  const [travelMode, setTravelMode] = useState<TravelModeType>();
 
   const [validated, setValidated] = useState(false);
 
@@ -84,12 +84,12 @@ const PromptForm: React.FC<PromptFormProps> = (props) => {
           <Form.Select
             value={travelMode}
             onChange={(e) => {
-              setTravelMode(e.target.value as TravelMode);
+              setTravelMode(e.target.value as TravelModeType);
             }}
           >
-            <option>Walking</option>
-            <option>Public Transport</option>
-            <option>Driving</option>
+            {Object.entries(TravelMode).map(([value, label]) => (
+              <option key={value}>{label}</option>
+            ))}
           </Form.Select>
         </Form.Group>
         <div>

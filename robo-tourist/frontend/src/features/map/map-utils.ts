@@ -1,5 +1,5 @@
 import { DISTANCE_TRAVEL_DAY, DISTANCE_TRAVEL_TIME } from "./const";
-import { Coord, TravelMode } from "../../globals/interfaces";
+import { Coord, TravelModeType } from "../../globals/interfaces";
 
 export const getPlace = (
   placeName: string,
@@ -77,7 +77,7 @@ export const numberedMarker = (number: number) => ({
 export const getRouteObjects = async (
   origin: Coord,
   destinations: Coord[],
-  travelMode: TravelMode
+  travelMode: TravelModeType
 ): Promise<google.maps.DirectionsResult[]> => {
   const directionsService = new window.google.maps.DirectionsService();
   const originLatLng = new window.google.maps.LatLng(origin.lat, origin.lng);

@@ -6,7 +6,7 @@ import { markersActions } from "../store/markerSlice";
 import { promptActions, selectPrompt } from "../store/promptSlice";
 import { selectView, viewActions } from "../store/viewSlice";
 import brandLogo from "../../assets/brand-logo.png";
-import { TravelMode } from "../globals/interfaces";
+import { TravelModeType, TravelMode } from "../globals/interfaces";
 // import "./Navbar.css";
 
 const Navigation: React.FC = ({}) => {
@@ -32,7 +32,7 @@ const Navigation: React.FC = ({}) => {
     e.preventDefault();
   };
 
-  const setTravelMode = (value: TravelMode) => {
+  const setTravelMode = (value: TravelModeType) => {
     dispatch(promptActions.updateTravelMode(value));
   };
 
@@ -51,21 +51,20 @@ const Navigation: React.FC = ({}) => {
           </Nav.Link>
           {appState.mode === "Result" && (
             <>
-              <NavDropdown title={`Travel mode: ${prompt.travelMode}`}>
-                {prompt.travelMode !== "Walking" && (
-                  <NavDropdown.Item onClick={() => setTravelMode("Walking")}>
-                    Walking
-                  </NavDropdown.Item>
-                )}
-                {prompt.travelMode !== "Transit" && (
-                  <NavDropdown.Item onClick={() => setTravelMode("Transit")}>
-                    Public Transport
-                  </NavDropdown.Item>
-                )}
-                {prompt.travelMode !== "Driving" && (
-                  <NavDropdown.Item onClick={() => setTravelMode("Driving")}>
-                    Driving
-                  </NavDropdown.Item>
+              <NavDropdown
+                title={`Travel mode: ${TravelMode[prompt.travelMode]}`}
+              >
+                {Object.entries(TravelMode).map(([value, label]) =>
+                  prompt.travelMode !== value ? (
+                    <NavDropdown.Item
+                      onClick={() => setTravelMode(value as TravelModeType)}
+                      key={value}
+                    >
+                      {label}
+                    </NavDropdown.Item>
+                  ) : (
+                    <></>
+                  )
                 )}
               </NavDropdown>
               <Nav.Link href="#" onClick={toggleDirections}>

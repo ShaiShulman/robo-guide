@@ -55,9 +55,10 @@ app.get(
         throw new Error("Request error! list of places must be specified");
       if (!target)
         throw new Error("Request error! search target must be specified");
-      const images = await getImagesFromGoogleSearch(places.split(","), target);
+      const placesArr = places.split(",");
+      const images = await getImagesFromGoogleSearch(placesArr, target);
       res.locals.results = images.map((image, index) => ({
-        place: places[index],
+        place: placesArr[index],
         image: image,
       }));
       next();

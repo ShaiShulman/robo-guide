@@ -1,12 +1,12 @@
 import { Directions } from "./interfaces";
-import { Coord, TravelMode } from "../../globals/interfaces";
+import { Coord, TravelModeType } from "../../globals/interfaces";
 import { getRouteObjects } from "./map-utils";
 import { MarkerInfo } from "../../globals/interfaces";
 
 export const updateDirections = async (
   markers: MarkerInfo[],
   directions: Directions,
-  travelMode: TravelMode,
+  travelMode: TravelModeType,
   origin: Coord
 ) => {
   if (

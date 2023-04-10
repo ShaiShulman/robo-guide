@@ -1,38 +1,52 @@
 import * as cheerio from "cheerio";
-import puppeteer, { Browser } from "puppeteer";
+import puppeteer, { Browser, Page } from "puppeteer";
 import { getPlaceNameVariations } from "./image-scraper-utils";
 
 export const getImagesFromGoogleSearch = async (
   places: string[],
   target: string
 ): Promise<(string | null)[]> => {
+  const puppeteerLaunchParams =
+    process.env.PUPPETEER_EXECUTABLE === "chrome"
+      ? {
+          executablePath: "/usr/bin/google-chrome",
+          headless: true,
+          args: ["--no-sandbox", "--disable-setuid-sandbox"],
+        }
+      : {};
   var browser: Browser;
 
   try {
-    var browser = await puppeteer.launch({
-      executablePath: "/usr/bin/google-chrome",
-      headless: true,
-      args: ["--no-sandbox", "--disable-setuid-sandbox"],
-    });
+    browser = await puppeteer.launch(puppeteerLaunchParams);
   } catch (error: any) {
     throw error;
   }
 
   try {
-    const promises = places.map((place) =>
-      getSingleImage(place, target, browser)
-    );
+    if (process.env.SCRAPING_METHOD === "parallel") {
+      const promises = places.map((place) =>
+        getSingleImage(place, target, browser)
+      );
 
-    const urls = ((await Promise.allSettled(promises)) as any[]).map(
-      (result) =>
-        (result.status = "fulfilled" ? (result.value as string) : null)
-    );
+      const urls = ((await Promise.allSettled(promises)) as any[]).map(
+        (result) =>
+          (result.status = "fulfilled" ? (result.value as string) : null)
+      );
 
-    return urls;
+      return urls;
+    } else {
+      const urls: (string | null)[] = [];
+      const page = await browser.newPage();
+      for (const place in places) {
+        const url = await getSingleImage(place, target, browser, page);
+        urls.push(url || null);
+      }
+      return urls;
+    }
   } catch (error: any) {
     throw error;
   } finally {
-    await browser?.close();
+    // await browser?.close();
   }
 };
 
@@ -44,23 +58,22 @@ const searchUrl = (query: string, target: string) =>
 const getSingleImage = async (
   place: string,
   target: string,
-  browser: Browser
+  browser: Browser,
+  currentPage?: Page // if browser page not provided, a new page will be created (used for parallel scraping)
 ) => {
-  const page = await browser.newPage();
+  const page = currentPage || (await browser.newPage());
 
   try {
     await page.goto(searchUrl(place, target), { waitUntil: "networkidle2" });
 
     const html = await page.content();
-    const $ = cheerio.load(html);
+
+    const $ = await cheerio.load(html);
 
     return firstImageElement(place, $);
   } catch (error: any) {
     console.log(error.message);
   } finally {
-    try {
-      await page.close();
-    } catch (error) {}
   }
 };
 
