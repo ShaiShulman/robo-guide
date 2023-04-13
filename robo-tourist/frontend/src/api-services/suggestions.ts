@@ -8,10 +8,14 @@ export const getSuggestions = async (target: string, preference?: string) => {
       )}&preference=${encodeURIComponent(preference)}`,
       { method: "GET" }
     );
-    if (response.ok) return (await response.json()).data;
-    else {
+    if (response.ok) {
+      const results = (await response.json()).data;
+      if (results.length === 0)
+        throw new Error("search error! No results found!");
+      return results;
+    } else {
       const json = await response.json();
-      if (json && json.error) throw new Error(json.error);
+      if (json && json.error) throw new Error(json.error.message);
       throw new Error(
         `Error communicating with backend! ${response.statusText}`
       );

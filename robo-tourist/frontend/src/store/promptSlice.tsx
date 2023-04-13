@@ -1,5 +1,5 @@
 import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { TravelModeType } from "../globals/interfaces";
+import { TravelModeType } from "../data/interfaces";
 import { RootState } from "./store";
 
 interface PromptSliceProps {

@@ -6,11 +6,11 @@ import "./App.css";
 import PromptForm from "./features/prompt/PromptForm";
 import List from "./features/list/List";
 import Spinner from "./components/Spinner";
-import { getSuggestions } from "./features/suggestions/openai-wrapper";
 import Navigation from "./components/Navigation";
 import Error from "./components/Error";
 import getDispatch from "./lib/get-dispatch";
 import { appActions, selectAppState } from "./store/appSlice";
+import { getSuggestions } from "./api-services/suggestions";
 
 function App() {
   const [places, setPlaces] = useState<string[]>([]);
@@ -42,24 +42,24 @@ function App() {
       <Navigation />
       <div id="App">
         <main>
-          {appState.mode === "Prompt" && (
-            <div className="container">
+          <div className="container">
+            {appState.mode === "Prompt" && (
               <PromptForm onFormSubmit={handleFormSubmitted} />
-            </div>
-          )}
-          {appState.mode === "Loading" && (
-            <Spinner message="Beep boop\nThe robot is gathering suggestions..." />
-          )}
-          {appState.mode === "Result" && (
-            <div className="container">
-              <List map={MapRef} />
+            )}
+            {appState.mode === "Loading" && (
+              <Spinner message="Beep boop\nThe robot is gathering suggestions..." />
+            )}
+            {appState.mode === "Result" && (
+              <div className="container">
+                <List map={MapRef} />
 
-              <div className="map-section">
-                <Map placeNames={places} onMapLoaded={handleMapLoaded} />
+                <div className="map-section">
+                  <Map placeNames={places} onMapLoaded={handleMapLoaded} />
+                </div>
               </div>
-            </div>
-          )}
-          {appState.mode === "Error" && <Error />}
+            )}
+            {appState.mode === "Error" && <Error />}
+          </div>
         </main>
       </div>
     </>

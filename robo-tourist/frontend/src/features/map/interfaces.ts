@@ -1,4 +1,4 @@
-import { MarkerInfo, TravelModeType } from "../../globals/interfaces";
+import { MarkerInfo, TravelModeType } from "../../data/interfaces";
 
 export interface Place {
   lat: number;
@@ -16,3 +16,9 @@ export type MarkerDirections = Record<
 >;
 
 export type Directions = Record<number, MarkerDirections>;
+
+export interface PlaceDetailsResponse {
+  photo?: string;
+  website?: string;
+  rating?: number;
+}

@@ -1,5 +1,5 @@
 import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { AppMode } from "../globals/interfaces";
+import { AppMode } from "../data/interfaces";
 import { AppThunk, RootState } from "./store";
 import { markersActions } from "./markerSlice";
 import { viewActions } from "./viewSlice";

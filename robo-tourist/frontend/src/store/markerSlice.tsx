@@ -1,14 +1,13 @@
 import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { getImagesFromBackend } from "../features/list/google-photos";
-import { getPhoto } from "../features/map/map-utils";
-import { MarkerInfo } from "../globals/interfaces";
-import { AppThunk, RootState } from "./store";
+import { MarkerInfo } from "../data/interfaces";
+import { RootState } from "./store";
 
 interface MarkerInfoProps {
   items: MarkerInfo[];
+  isLoaded: boolean;
 }
 
-const initialState: MarkerInfoProps = { items: [] };
+const initialState: MarkerInfoProps = { items: [], isLoaded: false };
 
 export const MarkersSlice = createSlice({
   name: "markers",
@@ -19,11 +18,19 @@ export const MarkersSlice = createSlice({
       ...state,
       items: action.payload,
     }),
+    updateDetails: (state, action: PayloadAction<Partial<MarkerInfo>[]>) => ({
+      ...state,
+      items: state.items.map((item, idx) => ({
+        ...item,
+        ...action.payload[idx],
+      })),
+    }),
+
     updatePhotos: (state, action: PayloadAction<string[]>) => ({
       ...state,
       items: state.items.map((item, idx) => ({
         ...item,
-        imageUrl: action.payload[idx],
+        photo: action.payload[idx],
       })),
     }),
     updatePhotosPartial: (
@@ -34,109 +41,32 @@ export const MarkersSlice = createSlice({
         ...state,
         items: state.items.map((item, idx) => ({
           ...item,
-          imageUrl: action.payload.indexes.includes(idx)
+          photo: action.payload.indexes.includes(idx)
             ? action.payload.photos[
                 action.payload.indexes.findIndex((i) => i === idx)
               ]
-            : item.imageUrl,
+            : item.photo,
         })),
       };
       return newState;
     },
+    setLoaded: (state) => ({ ...state, isLoaded: true }),
   },
 });
-
-export const updateMarkerPhotos = (Map: any): AppThunk => {
-  return async (dispatch, getState) => {
-    const gmapPhotos: string[] = await getPhotosFromGoogleMaps(
-      getState().markers.items.map((item) => item.placeId),
-      Map
-    );
-    const emptyImagesIdx: number[] = gmapPhotos.reduce((acc, curr, idx) => {
-      if (!curr || curr.length === 0) acc.push(idx);
-      return acc;
-    }, []);
-
-    const missingPhotosIdx = Array.from(
-      new Set(emptyImagesIdx.concat(findNonUniqueIndexes(gmapPhotos)))
-    );
-
-    dispatch(
-      markersActions.updatePhotos(
-        gmapPhotos.map((item, idx) =>
-          missingPhotosIdx.includes(idx) ? null : item
-        )
-      )
-    );
-
-    const missingPhotosNames = getState()
-      .markers.items.map((marker) => marker.title)
-      .map((item, index) => {
-        return missingPhotosIdx.includes(index) ? item : null;
-      })
-      .filter((item) => item !== null);
-
-    const searchPhotos = await getPhotosFromSearch(
-      missingPhotosNames,
-      getState().prompt.target,
-      getState().prompt.preference
-    );
-
-    if (searchPhotos) {
-      dispatch(
-        markersActions.updatePhotosPartial({
-          indexes: missingPhotosIdx,
-          photos: searchPhotos,
-        })
-      );
-    }
-  };
-};
-
-const getPhotosFromGoogleMaps = async (placeIds: string[], Map: any) => {
-  const urls = (await Promise.allSettled(
-    placeIds.map((id) => getPhoto(id, Map))
-  )) as any[];
-  return urls.map((url) => url.value);
-};
-
-const getPhotosFromSearch = async (
-  places: string[],
-  target: string,
-  preference?: string
-) => {
-  return (await getImagesFromBackend(places, target, preference)).map(
-    (item) => item.image
-  );
-};
-
-const findNonUniqueIndexes = (list: any[]) => {
-  const nonUniqueIndexes: number[] = [];
-
-  for (let i = 0; i < list.length; i++) {
-    const value = list[i];
-
-    if (
-      list
-        .slice(0, i)
-        .concat(list.slice(i + 1))
-        .includes(value)
-    ) {
-      nonUniqueIndexes.push(i);
-    }
-  }
-
-  return nonUniqueIndexes;
-};
 
 export const selectMarkers = createSelector(
   (state: RootState) => state.markers,
   (data) => data.items
 );
 
-export const selectImages = createSelector(
+export const selectPhotos = createSelector(
   (state: RootState) => state.markers,
-  (data) => data.items.map((item) => item.imageUrl)
+  (data) => data.items.map((item) => item.photo)
+);
+
+export const selectIsMarkersLoaded = createSelector(
+  (state: RootState) => state.markers,
+  (data) => data.isLoaded
 );
 
 export const markersActions = MarkersSlice.actions;

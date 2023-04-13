@@ -1,5 +1,6 @@
 import { DISTANCE_TRAVEL_DAY, DISTANCE_TRAVEL_TIME } from "./const";
-import { Coord, TravelModeType } from "../../globals/interfaces";
+import { Coord, TravelModeType } from "../../data/interfaces";
+import { PlaceDetailsResponse } from "./interfaces";
 
 export const getPlace = (
   placeName: string,
@@ -36,27 +37,33 @@ export const getBounds = (markers: Coord[]) => {
   return bounds;
 };
 
-export async function getPhoto(placeId, map) {
+export const getPlaceDetailsPhoto = async (
+  placeId: string,
+  map: google.maps.Map
+): Promise<PlaceDetailsResponse> => {
   return new Promise((resolve, reject) => {
     var service = new google.maps.places.PlacesService(map);
     service.getDetails(
-      { placeId: placeId, fields: ["name", "geometry", "photos"] },
+      {
+        placeId: placeId,
+        fields: ["name", "geometry", "photos", "website", "rating"],
+      },
       (place, status) => {
-        if (
-          status === google.maps.places.PlacesServiceStatus.OK &&
+        if (status !== google.maps.places.PlacesServiceStatus.OK)
+          reject(new Error("No details found for this place."));
+        const photoUrl =
           place.photos &&
-          place.photos.length
-        ) {
-          const photoUrl = (place.photos[0] as any).getUrl();
-          // const photoUrl = `https://maps.googleapis.com/maps/api/place/photo?maxwidth=400&photoreference=${photoReference}&key=${GOOGLE_MAPS_API_KEY}`;
-          resolve(photoUrl);
-        } else {
-          reject(new Error("No photo found for this place."));
-        }
+          place.photos.length &&
+          (place.photos[0] as any).getUrl();
+        resolve({
+          photo: photoUrl,
+          website: place.website,
+          rating: place.rating,
+        });
       }
     );
   });
-}
+};
 
 export const splitPlaceName = (place: string) => {
   const SPLIT_CHARS = /(–\s)|(:\s)|(-\s)/;

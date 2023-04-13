@@ -16,11 +16,12 @@ export interface MarkerInfo {
   desc?: string;
   lat: number;
   lng: number;
-  imageUrl?: string;
+  photo?: string;
   placeId?: string;
   routeDistance?: number;
   routeDuration?: number;
-  url?: string;
+  website?: string;
+  rating?: number;
   selected?: boolean;
 }
 

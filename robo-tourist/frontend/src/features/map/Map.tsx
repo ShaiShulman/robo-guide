@@ -5,9 +5,8 @@ import {
   numberedMarker,
   splitPlaceName,
 } from "./map-utils";
-import { Coord } from "../../globals/interfaces";
+import { Coord } from "../../data/interfaces";
 import { Directions, MarkerWithDirections, Place } from "./interfaces";
-import { MarkerInfo } from "../../globals/interfaces";
 import { Marker } from "@react-google-maps/api";
 import { GOOGLE_MAPS_API_KEY } from "./const";
 import {
@@ -22,12 +21,13 @@ import { useSelector } from "react-redux";
 import { selectPrompt } from "../../store/promptSlice";
 import {
   markersActions,
+  selectIsMarkersLoaded,
   selectMarkers,
-  updateMarkerPhotos,
 } from "../../store/markerSlice";
 import getDispatch from "../../lib/get-dispatch";
 import { selectView, viewActions } from "../../store/viewSlice";
 import { updateDirections } from "./directions-utils";
+import { updateMarkerDetailsPhotos } from "./photos-middleware";
 
 interface MapProps {
   placeNames: string[];
@@ -46,6 +46,7 @@ const Map: React.FC<MapProps> = ({ placeNames, onMapLoaded }) => {
   const markerRefs = useRef([]);
 
   const view = useSelector(selectView);
+  const isMarkersLoaded = useSelector(selectIsMarkersLoaded);
 
   const { isLoaded, loadError } = useJsApiLoader({
     googleMapsApiKey: GOOGLE_MAPS_API_KEY,
@@ -174,10 +175,11 @@ const Map: React.FC<MapProps> = ({ placeNames, onMapLoaded }) => {
         )
       );
       onMapLoaded(Map);
-      dispatch(updateMarkerPhotos);
     };
     setMap()
-      .then((result) => dispatch(updateMarkerPhotos(Map)))
+      .then((result) => {
+        if (!isMarkersLoaded) dispatch(updateMarkerDetailsPhotos(Map));
+      })
       .catch((err) => console.error(err));
   }, [placeNames, promptInfo.target, promptInfo.travelMode, Map]);
 

@@ -1,6 +1,6 @@
 import { FormEventHandler, useEffect, useState } from "react";
 import { Button, Form } from "react-bootstrap";
-import { TravelMode, TravelModeType } from "../../globals/interfaces";
+import { TravelMode, TravelModeType } from "../../data/interfaces";
 import { AppDispatch } from "../../store/store";
 import { promptActions, selectPrompt } from "../../store/promptSlice";
 import { useDispatch, useSelector } from "react-redux";
@@ -48,6 +48,8 @@ const PromptForm: React.FC<PromptFormProps> = (props) => {
           <Form.Label>Where are you going?</Form.Label>
           <Form.Control
             type="text"
+            minLength={3}
+            maxLength={20}
             required
             placeholder="Enter a name of a region, city or neighbourhood"
             value={prompt}
@@ -62,6 +64,8 @@ const PromptForm: React.FC<PromptFormProps> = (props) => {
           <Form.Control
             type="text"
             placeholder="Enter a list of interests, seperated with a comma"
+            minLength={3}
+            maxLength={70}
             value={preference}
             onChange={(e) => {
               setPreference(e.target.value);

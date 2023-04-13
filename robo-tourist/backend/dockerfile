@@ -22,4 +22,4 @@ ENV PORT=2500
 
 EXPOSE 2500
 
-CMD ["npm", "run", "start:dev"]
+CMD ["npm", "run", "dev"]

@@ -37,7 +37,7 @@ export const getImagesFromGoogleSearch = async (
     } else {
       const urls: (string | null)[] = [];
       const page = await browser.newPage();
-      for (const place in places) {
+      for (const place of places) {
         const url = await getSingleImage(place, target, browser, page);
         urls.push(url || null);
       }
@@ -46,7 +46,7 @@ export const getImagesFromGoogleSearch = async (
   } catch (error: any) {
     throw error;
   } finally {
-    // await browser?.close();
+    await browser?.close();
   }
 };
 
