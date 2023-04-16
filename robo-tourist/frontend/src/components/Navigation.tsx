@@ -43,7 +43,7 @@ const Navigation: React.FC = ({}) => {
         <Navbar.Toggle aria-controls="responsive-navbar-nav" />
         <Navbar.Collapse>
           <Nav>
-            <Nav.Link href="#" onClick={newSearch}>
+            <Nav.Link key="new" href="#" onClick={newSearch}>
               New search
             </Nav.Link>
             {appState.mode === "Result" && (
@@ -64,10 +64,10 @@ const Navigation: React.FC = ({}) => {
                     )
                   )}
                 </NavDropdown>
-                <Nav.Link href="#" onClick={toggleDirections}>
+                <Nav.Link key="directions" href="#" onClick={toggleDirections}>
                   Directions: {view.directions ? "show" : "hide"}
                 </Nav.Link>
-                <Nav.Link href="#" onClick={toggleCompact}>
+                <Nav.Link key="view" href="#" onClick={toggleCompact}>
                   View: {view.compact ? "compact" : "full"}
                 </Nav.Link>
               </>

@@ -21,7 +21,11 @@ export const updateMarkerDetailsPhotos = (Map: any): AppThunk => {
       }, []);
 
     const missingPhotosIdx = Array.from(
-      new Set(emptyImagesIdx.concat(findNonUniqueIndexes(gmapPlaceDetails)))
+      new Set(
+        emptyImagesIdx.concat(
+          findNonUniqueIndexes(gmapPlaceDetails.map((item) => item?.photo))
+        )
+      )
     );
 
     dispatch(

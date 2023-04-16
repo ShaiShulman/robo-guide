@@ -1,3 +1,4 @@
+// what is the purpose of this function?
 export const findNonUniqueIndexes = (list: any[]) => {
   const nonUniqueIndexes: number[] = [];
 

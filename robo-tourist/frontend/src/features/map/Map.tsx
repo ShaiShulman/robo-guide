@@ -90,12 +90,16 @@ const Map: React.FC<MapProps> = ({ placeNames, onMapLoaded }) => {
         {originCoord && (
           <Marker key="center" position={originCoord} icon={bullseyeIcon} />
         )}
-        {view.directions && view.selected !== null && (
-          <DirectionsRenderer
-            directions={directions[view.selected][promptInfo.travelMode]}
-            options={{ suppressMarkers: true }}
-          />
-        )}
+        {view.directions &&
+          view.selected !== null &&
+          markers[view.selected].routeDistance > 0 &&
+          directions[view.selected] &&
+          directions[view.selected][promptInfo.travelMode] && (
+            <DirectionsRenderer
+              directions={directions[view.selected][promptInfo.travelMode]}
+              options={{ suppressMarkers: true }}
+            />
+          )}
       </GoogleMap>
     );
   };

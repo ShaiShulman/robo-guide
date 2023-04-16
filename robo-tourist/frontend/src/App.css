@@ -25,6 +25,7 @@
   width: 100%;
   position: relative;
   padding: 0;
+  overflow-y: hidden;
 }
 
 /* Set style for list section */
@@ -74,13 +75,13 @@
 /* Style for image in list item */
 .list-item .place-image {
   /* make imahe 70px wide and 70px high without stretching */
-  width: 70px;
-  max-height: 70px;
+  width: 100px;
+  max-height: 100px;
 }
 
 .list-item.expanded .place-image {
-  width: 200px;
-  max-height: 200px;
+  width: 300px;
+  max-height: 300px;
   transition: width 300ms;
 }
 
@@ -190,8 +191,8 @@ Form {
   }
 
   .list-item.expanded .place-image {
-    max-height: 120px;
-    width: 120px;
+    max-height: 200px;
+    width: 200px;
   }
 
   .item-title {
