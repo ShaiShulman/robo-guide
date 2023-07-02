@@ -6,8 +6,8 @@ if (process.env.NODE_ENV !== "production") dotenv.config();
 
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 const OPENAI_URL = "https://api.openai.com/v1/chat/completions";
-const MAX_TARGET_LENGTH = 20;
-const MAX_PREF_LENGTH = 70;
+const MAX_TARGET_LENGTH = 70;
+const MAX_PREF_LENGTH = 120;
 
 export const getSuggestions = async (target: string, preference?: string) => {
   if (!target)

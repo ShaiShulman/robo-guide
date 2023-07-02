@@ -1,7 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-
-const TEXT_RED = "\x1b[31m";
-const TEXT_BLACK = "\x1b[30m";
+import { TEXT_COLOR } from "../const";
 
 export const errorHandlerMiddleware = (
   err: Error,
@@ -9,7 +7,7 @@ export const errorHandlerMiddleware = (
   res: Response,
   next: NextFunction
 ) => {
-  console.log(TEXT_RED, err.stack, TEXT_BLACK);
+  console.log(TEXT_COLOR.red, err.stack, TEXT_COLOR.black);
   res.status(500).json({
     error: {
       message: err.message,

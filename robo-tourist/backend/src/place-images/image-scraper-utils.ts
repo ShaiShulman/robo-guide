@@ -26,3 +26,8 @@ const removeLeadingArticleAndQoute = (str: string) => {
   const leadingArticleRegex = /^(a|an|the|")\s/i;
   return str.replace(leadingArticleRegex, "");
 };
+
+export const searchUrl = (query: string, target: string) =>
+  `https://www.google.com/search?q=${encodeURIComponent(
+    query.includes(target) ? query : query + "," + target
+  )}&tbm=isch`;

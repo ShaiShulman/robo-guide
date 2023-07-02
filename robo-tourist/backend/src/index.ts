@@ -5,9 +5,7 @@ import { getSuggestions } from "./suggestions/openai";
 import { getImagesFromGoogleSearch } from "./place-images/image-scraper";
 import { jsonResponseMiddleware } from "./middleware/jsonResponseMiddleware";
 import { errorHandlerMiddleware } from "./middleware/errorHandlerMiddleware";
-
-const TEXT_BLUE = "\x1b[34m%s\x1b[0";
-const TEXT_BLACK = "\x1b[30m";
+import { TEXT_COLOR } from "./const";
 
 const app = express();
 const port = process.env.PORT || "8000";
@@ -17,9 +15,9 @@ app.use(express.json());
 
 app.use((req: Request, res: Response, next: NextFunction) => {
   console.log(
-    TEXT_BLUE,
+    TEXT_COLOR.blue,
     `${req.method} ${req.originalUrl} | ${new Date().toISOString()}`,
-    TEXT_BLACK
+    TEXT_COLOR.black
   );
   next();
 });

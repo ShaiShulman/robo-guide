@@ -1,6 +1,10 @@
 import * as cheerio from "cheerio";
 import puppeteer, { Browser, Page } from "puppeteer";
-import { getPlaceNameVariations } from "./image-scraper-utils";
+import { getPlaceNameVariations, searchUrl } from "./image-scraper-utils";
+import { getImageFromCache, setImageToCache } from "./image-cache";
+import { TEXT_COLOR } from "../const";
+
+const TARGET_DELIMITER = ",";
 
 export const getImagesFromGoogleSearch = async (
   places: string[],
@@ -38,7 +42,12 @@ export const getImagesFromGoogleSearch = async (
       const urls: (string | null)[] = [];
       const page = await browser.newPage();
       for (const place of places) {
-        const url = await getSingleImage(place, target, browser, page);
+        const url = await getSingleImage(
+          place,
+          target.split(TARGET_DELIMITER)[0],
+          browser,
+          page
+        );
         urls.push(url || null);
       }
       return urls;
@@ -50,11 +59,6 @@ export const getImagesFromGoogleSearch = async (
   }
 };
 
-const searchUrl = (query: string, target: string) =>
-  `https://www.google.com/search?q=${encodeURIComponent(
-    query.includes(target) ? query : query + "," + target
-  )}&tbm=isch`;
-
 const getSingleImage = async (
   place: string,
   target: string,
@@ -63,6 +67,16 @@ const getSingleImage = async (
 ) => {
   const page = currentPage || (await browser.newPage());
 
+  const cache = await getImageFromCache({ place, target });
+  if (cache) {
+    console.log(
+      TEXT_COLOR.green,
+      `Image for ${place} (${target.slice(0, 10)}) provided from cache`,
+      TEXT_COLOR.black
+    );
+    return cache;
+  }
+
   try {
     await page.goto(searchUrl(place, target), { waitUntil: "networkidle2" });
 
@@ -70,7 +84,22 @@ const getSingleImage = async (
 
     const $ = await cheerio.load(html);
 
-    return firstImageElement(place, $);
+    const url = firstImageElement(place, $);
+    if (url) {
+      console.log(
+        TEXT_COLOR.green,
+        `Image for ${place} (${target.slice(0, 10)}) provided from scraper`,
+        TEXT_COLOR.black
+      );
+      setImageToCache({ place, target, image: url });
+    } else
+      console.log(
+        TEXT_COLOR.green,
+        `Image for ${place} (${target.slice(0, 10)}) not found`,
+        TEXT_COLOR.black
+      );
+
+    return url;
   } catch (error: any) {
     console.log(error.message);
   } finally {

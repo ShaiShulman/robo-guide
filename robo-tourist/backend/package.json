@@ -25,6 +25,7 @@
   },
   "dependencies": {
     "cheerio": "^1.0.0-rc.12",
-    "puppeteer": "^19.8.2"
+    "puppeteer": "^19.8.2",
+    "redis": "^4.6.5"
   }
 }
