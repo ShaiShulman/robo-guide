@@ -14,7 +14,7 @@ export default defineConfig({
     proxy: {
       // Proxy options here
       "/api": {
-        target: "http://roboguide.xyz:2500/",
+        target: "https://roboguide.xyz/api",
         // target: "http://localhost:2500",
         changeOrigin: true,
       },
