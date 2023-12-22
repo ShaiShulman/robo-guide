@@ -11,13 +11,11 @@ export default defineConfig({
     host: true, // needed for the Docker Container port mapping to work
     strictPort: true,
     port: 2000, // you can replace this port with any port
-    proxy: {
-      // Proxy options here
-      "/api": {
-        target: "https://roboguide.xyz/api",
-        // target: "http://localhost:2500",
-        changeOrigin: true,
-      },
-    },
+    // proxy: {
+    //   "/api": {
+    //     target: "http://localhost:8000",
+    //     changeOrigin: true,
+    //   },
+    // },
   },
 });
