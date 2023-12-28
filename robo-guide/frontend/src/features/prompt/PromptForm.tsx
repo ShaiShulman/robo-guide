@@ -39,12 +39,6 @@ const PromptForm: React.FC<PromptFormProps> = (props) => {
           travelMode,
         })
       );
-      console.log({
-        target: prompt,
-        preference: preference,
-        origin,
-        travelMode,
-      });
       props.onFormSubmit({ target: prompt, preference, origin, travelMode });
     }
     setValidated(true);

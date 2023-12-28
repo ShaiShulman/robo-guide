@@ -13,11 +13,27 @@ export const MarkersSlice = createSlice({
   name: "markers",
   initialState,
   reducers: {
-    reset: (state) => initialState,
-    update: (state, action: PayloadAction<MarkerInfo[]>) => ({
+    reset: () => initialState,
+    add: (state, action: PayloadAction<MarkerInfo>) => ({
       ...state,
-      items: action.payload,
+      items: [...state.items, action.payload],
     }),
+    update: (
+      state,
+      action: PayloadAction<{ index: number; marker: Partial<MarkerInfo> }>
+    ) => {
+      const { index, marker } = action.payload;
+      return {
+        ...state,
+        items: state.items.map((item, idx) =>
+          idx === index ? { ...item, ...marker } : item
+        ),
+      };
+    },
+    // update: (state, action: PayloadAction<MarkerInfo[]>) => ({
+    //   ...state,
+    //   items: action.payload,
+    // }),
     updateDetails: (state, action: PayloadAction<Partial<MarkerInfo>[]>) => ({
       ...state,
       items: state.items.map((item, idx) => ({

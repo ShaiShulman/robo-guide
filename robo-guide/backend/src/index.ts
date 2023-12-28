@@ -5,6 +5,7 @@ import { getSuggestions } from "./suggestions/openai";
 import { getImagesFromGoogleSearch } from "./place-images/image-scraper";
 import { jsonResponseMiddleware } from "./middleware/jsonResponseMiddleware";
 import { errorHandlerMiddleware } from "./middleware/errorHandlerMiddleware";
+import { Readable } from "stream";
 import { TEXT_COLOR } from "./const";
 
 const app = express();
@@ -33,12 +34,27 @@ app.get(
     try {
       const target = req.query.target as string;
       const preference = req.query.preference as string | undefined;
-      const suggestions = await getSuggestions(target, preference);
-      res.locals.results = suggestions;
+      const emitter = await getSuggestions(target, preference);
+      const stream = new Readable({
+        read() {},
+      });
+      emitter.on("line", (line) => {
+        stream.push(line);
+      });
+      emitter.on("end", () => {
+        stream.push(null);
+      });
+      emitter.on("error", (error) => {
+        stream.emit("error", error);
+      });
+
+      res.setHeader("Content-Type", "text/event-stream");
+      res.setHeader("Cache-Control", "no-cache");
+      res.setHeader("Connection", "keep-alive");
+      stream.pipe(res);
     } catch (error: any) {
       next(error);
     }
-    next();
   }
 );
 

@@ -7,12 +7,14 @@ export const updateDirections = async (
   markers: MarkerInfo[],
   directions: Directions,
   travelMode: TravelModeType,
-  origin: Coord
+  origin: Coord,
+  startIndex: number
 ) => {
   if (
-    Object.values(directions)
-      .map((record) => record[travelMode])
-      .every((value) => value === null)
+    Object.entries(directions)
+      .filter(([key]) => parseInt(key) > startIndex)
+      .map(([key, record]) => record[travelMode])
+      .every((value) => !value)
   ) {
     const newDirections = { ...directions };
     const routes = await getRouteObjects(
@@ -22,15 +24,15 @@ export const updateDirections = async (
     );
 
     for (const marker of markers) {
-      if (!newDirections[markers.indexOf(marker)]) {
-        newDirections[markers.indexOf(marker)] = {
+      if (!newDirections[markers.indexOf(marker) + startIndex]) {
+        newDirections[markers.indexOf(marker) + startIndex] = {
           Driving: null,
           Walking: null,
           Bicycling: null,
           Transit: null,
         };
       }
-      newDirections[markers.indexOf(marker)][travelMode] =
+      newDirections[markers.indexOf(marker) + startIndex][travelMode] =
         routes[markers.indexOf(marker)];
     }
 

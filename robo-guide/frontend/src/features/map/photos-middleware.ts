@@ -1,3 +1,4 @@
+import { MarkerInfo } from "../../data/interfaces";
 import { markersActions } from "../../store/markerSlice";
 import { AppThunk } from "../../store/store";
 import { findNonUniqueIndexes } from "../../utils/index-utils";
@@ -6,7 +7,37 @@ import {
   getPhotosFromSearch,
 } from "./place-details-utils";
 
-export const updateMarkerDetailsPhotos = (Map: any): AppThunk => {
+export const updateMarkerDetailsPhotoSingle = (
+  Map: any,
+  marker: MarkerInfo,
+  index: number
+): AppThunk => {
+  return async (dispatch, getState) => {
+    const gmapPlaceDetail = marker.placeId
+      ? await getPlaceDetailsFromGoogleMaps([marker.placeId], Map)
+      : null;
+
+    let photo = gmapPlaceDetail?.[0].photo;
+    if (!photo || photo.length === 0) {
+      photo = await getPhotosFromSearch(
+        [marker.title],
+        getState().prompt.target,
+        getState().prompt.preference
+      )?.[0];
+    }
+    console.log(photo, index);
+    if (photo) {
+      dispatch(
+        markersActions.updatePhotosPartial({
+          indexes: [index],
+          photos: [photo],
+        })
+      );
+    }
+    // dispatch(markersActions.setLoaded());
+  };
+};
+export const updateMarkerDetailsPhotosAll = (Map: any): AppThunk => {
   return async (dispatch, getState) => {
     const gmapPlaceDetails = await getPlaceDetailsFromGoogleMaps(
       getState().markers.items.map((item) => item.placeId),

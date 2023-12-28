@@ -1,41 +1,42 @@
 import * as dotenv from "dotenv";
-import fetch from "node-fetch";
-import { splitResponse } from "./utils";
+import { getPrompt } from "./prompt";
+import { OpenAI } from "openai";
+import { EventEmitter } from "events";
 
 if (process.env.NODE_ENV !== "production") dotenv.config();
-
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
-const OPENAI_URL = "https://api.openai.com/v1/chat/completions";
-const MAX_TARGET_LENGTH = 70;
-const MAX_PREF_LENGTH = 120;
+const OPENAI_MODEL = process.env.OPENAI_MODEL || "gpt-4";
+const lineStartRE = /.*\n/;
 
 export const getSuggestions = async (target: string, preference?: string) => {
-  if (!target)
-    throw new Error("Input Error! Target parameter must be provided.");
-  if (target.length > MAX_TARGET_LENGTH)
-    throw new Error("Input Error! Target name exceed maximum length.");
-  if (preference && preference.length > MAX_PREF_LENGTH)
-    throw new Error("Input Error! Preference exceed maximum length.");
-
-  const prompt = `I'm visiting ${target} ${
-    preference && preference.length > 3
-      ? "and I'm looking for " + preference
-      : ""
-  }. Give me 10 recommendations for places to visit and provide two paragarphs describing the place and why i should visit each one.`;
-  const response = await fetch(OPENAI_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${OPENAI_API_KEY}`,
-    },
-    body: JSON.stringify({
-      model: "gpt-3.5-turbo",
-      messages: [{ role: "user", content: prompt }],
-    }),
+  const prompt = getPrompt(target, preference);
+  const openai = new OpenAI({
+    apiKey: OPENAI_API_KEY,
   });
-  if (!response.ok)
-    throw new Error(`Error accessing GPT-3! Status code: ${response.status}.`);
-  const message = (await response.json()).choices[0].message.content;
-  if (message) return splitResponse(message as string);
-  else throw new Error("Error processing GPT-3 response!");
+
+  const stream = await openai.chat.completions.create({
+    model: OPENAI_MODEL,
+    messages: [{ role: "user", content: prompt }],
+    frequency_penalty: 0,
+    presence_penalty: 0,
+    stream: true,
+  });
+
+  const emitter = new EventEmitter();
+
+  process.nextTick(async () => {
+    let buffer = "";
+    for await (const chunk of stream) {
+      const payload = chunk.choices[0]?.delta?.content?.replace("\n", "") || "";
+      if (payload.includes("[DONE]")) return;
+      const match = lineStartRE.exec(payload);
+      if (match) {
+        emitter.emit("line", buffer + match[0]);
+        buffer = payload.slice(match.index + match[0].length);
+      } else buffer += payload;
+    }
+    emitter.emit(buffer);
+    emitter.emit("end");
+  });
+  return emitter;
 };

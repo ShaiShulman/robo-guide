@@ -50,6 +50,7 @@ const Navigation: React.FC = ({}) => {
               <>
                 <NavDropdown
                   title={`Travel mode: ${TravelMode[prompt.travelMode]}`}
+                  key="travelMode"
                 >
                   {Object.entries(TravelMode).map(([value, label]) =>
                     prompt.travelMode !== value ? (

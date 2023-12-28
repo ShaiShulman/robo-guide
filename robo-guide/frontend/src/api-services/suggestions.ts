@@ -1,25 +1,23 @@
+import { getStreamedResponse } from "./stream-utils";
+
 const SUGGESTIONS_BACKEND_URL = "/api/suggestions";
 
-export const getSuggestions = async (target: string, preference?: string) => {
+export const getSuggestions = async (
+  target: string,
+  preference: string | null,
+  onNewPlace: (place: string) => void,
+  signal?: AbortSignal
+) => {
   try {
-    const response = await fetch(
+    await getStreamedResponse(
       `${SUGGESTIONS_BACKEND_URL}?target=${encodeURIComponent(
         target
       )}&preference=${encodeURIComponent(preference)}`,
-      { method: "GET" }
+      (_, value) => {
+        onNewPlace(value);
+      },
+      signal
     );
-    if (response.ok) {
-      const results = (await response.json()).data;
-      if (results.length === 0)
-        throw new Error("search error! No results found!");
-      return results;
-    } else {
-      const json = await response.json();
-      if (json && json.error) throw new Error(json.error.message);
-      throw new Error(
-        `Error communicating with backend! ${response.statusText}`
-      );
-    }
   } catch (error) {
     throw error;
   }

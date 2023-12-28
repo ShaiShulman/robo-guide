@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 
 import Map from "./features/map/Map";
@@ -19,18 +19,23 @@ function App() {
   const dispatch = getDispatch();
   const appState = useSelector(selectAppState);
 
+  let abortController: AbortController = null;
+
+  useEffect(() => {
+    if (appState.mode === "Prompt" && abortController.signal)
+      abortController.abort();
+  }, [appState.mode]);
+
   const handleFormSubmitted = (prompt) => {
-    dispatch(appActions.setMode("Loading"));
-    getSuggestions(prompt.target, prompt.preference)
-      .then((suggestions) => {
-        if (suggestions) {
-          setPlaces(suggestions);
-          dispatch(appActions.setMode("Result"));
-        } else appActions.setMode("Prompt");
-      })
-      .catch((error) => {
-        dispatch(appActions.setError(error.message));
-      });
+    abortController = new AbortController();
+    setPlaces([]);
+    dispatch(appActions.setMode("Result"));
+    getSuggestions(
+      prompt.target,
+      prompt.preference,
+      (place) => setPlaces((curr) => [...curr, place]),
+      abortController.signal
+    );
   };
   const handleMapLoaded = (MapsApi: any) => {
     setMapRef(MapsApi);
