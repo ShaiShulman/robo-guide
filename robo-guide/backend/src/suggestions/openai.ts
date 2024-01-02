@@ -8,8 +8,12 @@ const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 const OPENAI_MODEL = process.env.OPENAI_MODEL || "gpt-4";
 const lineStartRE = /.*\n/;
 
-export const getSuggestions = async (target: string, preference?: string) => {
-  const prompt = getPrompt(target, preference);
+export const getSuggestions = async (
+  target: string,
+  preference?: string,
+  origin?: string
+) => {
+  const prompt = getPrompt(target, preference, origin);
   const openai = new OpenAI({
     apiKey: OPENAI_API_KEY,
   });

@@ -1,7 +1,7 @@
 import { Nav, Navbar, NavDropdown } from "react-bootstrap";
 import { useSelector } from "react-redux";
 import getDispatch from "../lib/get-dispatch";
-import { resetAppState, selectAppState } from "../store/appSlice";
+import { resetAppState, selectAppState, appActions } from "../store/appSlice";
 import { promptActions, selectPrompt } from "../store/promptSlice";
 import { selectView, viewActions } from "../store/viewSlice";
 import brandLogo from "../assets/brand-logo.png";
@@ -16,6 +16,11 @@ const Navigation: React.FC = ({}) => {
   const newSearch = (e: any) => {
     dispatch(resetAppState());
     e.preventDefault();
+  };
+
+  const cancelSearch = (e: any) => {
+    dispatch(appActions.setMode("Result"));
+    // e.preventDefault();
   };
 
   const view = useSelector(selectView);
@@ -41,11 +46,18 @@ const Navigation: React.FC = ({}) => {
         <img className="navbar-brand-image" src={brandLogo} alt="logo" />
         <Navbar.Brand href="#">RoboGuide</Navbar.Brand>
         <Navbar.Toggle aria-controls="responsive-navbar-nav" />
-        <Navbar.Collapse>
+        <Navbar.Collapse key="collapse">
           <Nav>
-            <Nav.Link key="new" href="#" onClick={newSearch}>
-              New search
-            </Nav.Link>
+            {(appState.mode === "Result" || appState.mode === "Loading") && (
+              <Nav.Link key="new" href="#" onClick={newSearch}>
+                New search
+              </Nav.Link>
+            )}
+            {appState.mode === "LoadingProgressive" && (
+              <Nav.Link key="cancel" href="#" onClick={cancelSearch}>
+                Cancel search
+              </Nav.Link>
+            )}
             {appState.mode === "Result" && (
               <>
                 <NavDropdown

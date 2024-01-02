@@ -19,15 +19,12 @@ import { Spinner } from "react-bootstrap";
 import bullseyeIcon from "../../assets/bullseye.svg";
 import { useSelector } from "react-redux";
 import { selectPrompt } from "../../store/promptSlice";
-import {
-  markersActions,
-  selectIsMarkersLoaded,
-  selectMarkers,
-} from "../../store/markerSlice";
+import { markersActions, selectMarkers } from "../../store/markerSlice";
 import getDispatch from "../../lib/get-dispatch";
 import { selectView, viewActions } from "../../store/viewSlice";
 import { updateDirections } from "./directions-utils";
 import { updateMarkerDetailsPhotoSingle } from "./photos-middleware";
+import { appActions, selectAppState } from "../../store/appSlice";
 
 interface MapProps {
   placeNames: string[];
@@ -46,7 +43,7 @@ const Map: React.FC<MapProps> = ({ placeNames, onMapLoaded }) => {
   const markerRefs = useRef([]);
 
   const view = useSelector(selectView);
-  // const isMarkersLoaded = useSelector(selectIsMarkersLoaded);
+  const appState = useSelector(selectAppState);
 
   const { isLoaded, loadError } = useJsApiLoader({
     googleMapsApiKey: GOOGLE_MAPS_API_KEY,
@@ -96,8 +93,19 @@ const Map: React.FC<MapProps> = ({ placeNames, onMapLoaded }) => {
         newDirections[markers.indexOf(marker) + startIndex][
           promptInfo.travelMode
         ]?.routes[0]?.legs[0].duration.value;
-      marker.directions = newDirections[markers.indexOf(marker) + startIndex];
     }
+    markers.forEach((marker, idx) => {
+      dispatch(
+        markersActions.update({
+          index: startIndex + idx,
+          marker: {
+            routeDuration: marker.routeDuration,
+            routeDistance: marker.routeDistance,
+          },
+        })
+      );
+    });
+
     return newDirections;
   };
 
@@ -105,6 +113,10 @@ const Map: React.FC<MapProps> = ({ placeNames, onMapLoaded }) => {
     const onLoad = (map: any) => {
       setMap(map);
     };
+
+    const sortedMarkers = Array.from(markers).sort(
+      (a, b) => (a.routeDuration ?? 0) - (b.routeDuration ?? 0)
+    );
 
     return (
       <GoogleMap
@@ -115,18 +127,23 @@ const Map: React.FC<MapProps> = ({ placeNames, onMapLoaded }) => {
         onLoad={onLoad}
         zoom={5}
       >
-        {markers.map((marker, index) => {
-          return (
-            <Marker
-              key={index}
-              icon={numberedMarker(index + 1)}
-              position={{ lat: marker.lat, lng: marker.lng }}
-              title={marker.title}
-              onClick={() => handleMarkerClick(index)}
-              onLoad={(marker) => markerRefs.current.push(marker)}
-            />
-          );
-        })}
+        {markers
+          .map((marker) => ({
+            ...marker,
+            index: sortedMarkers.findIndex((m) => m === marker),
+          }))
+          .map((marker, idx) => {
+            return (
+              <Marker
+                key={idx}
+                icon={numberedMarker(marker.index + 1)}
+                position={{ lat: marker.lat, lng: marker.lng }}
+                title={marker.title}
+                onClick={() => handleMarkerClick(idx)}
+                onLoad={(marker) => markerRefs.current.push(marker)}
+              />
+            );
+          })}
         {originCoord && (
           <Marker key="center" position={originCoord} icon={bullseyeIcon} />
         )}
@@ -185,45 +202,19 @@ const Map: React.FC<MapProps> = ({ placeNames, onMapLoaded }) => {
       newMarkers.forEach((marker) => {
         dispatch(markersActions.add({ ...marker }));
       });
-      // TODO: sorting
-      // } else newMarkers = structuredClone(markers);
-
-      // newMarkers.sort((a, b) =>
-      //   a.routeDuration ? a.routeDuration - (b.routeDuration ?? 0) : -1
-      // );
-
-      const newDirections = await getDirections(
-        newMarkers,
-        origin || originCoord,
-        currMarkersCount
-      );
-      console.log(newDirections);
-      setDirections(newDirections);
-      // setDirections((prevDirections) =>
-      //   newMarkers.reduce((acc, marker, idx) => {
-      //     acc[currMarkersCount + idx] = {
-      //       ...acc[currMarkersCount + idx],
-      //       [promptInfo.travelMode]: marker.directions?.[0],
-      //     };
-      //     return acc;
-      //   }, prevDirections)
-      // );
-      newMarkers.forEach((marker, idx) => {
-        dispatch(
-          markersActions.update({
-            index: currMarkersCount + idx,
-            marker: {
-              routeDuration: marker.routeDuration,
-              routeDistance: marker.routeDistance,
-            },
-          })
+      if (newMarkers.length) {
+        const newDirections = await getDirections(
+          newMarkers,
+          origin || originCoord,
+          currMarkersCount
         );
-      });
-      newMarkers.forEach((marker, idx) => {
-        dispatch(
-          updateMarkerDetailsPhotoSingle(Map, marker, currMarkersCount + idx)
-        );
-      });
+        setDirections(newDirections);
+        newMarkers.forEach((marker, idx) => {
+          dispatch(
+            updateMarkerDetailsPhotoSingle(Map, marker, currMarkersCount + idx)
+          );
+        });
+      }
       onMapLoaded(Map);
     };
     setMap();
@@ -231,7 +222,24 @@ const Map: React.FC<MapProps> = ({ placeNames, onMapLoaded }) => {
     //   if (!isMarkersLoaded) dispatch(updateMarkerDetailsPhotos(Map));
     // })
     // .catch((err) => console.error(err));
-  }, [placeNames, promptInfo.target, promptInfo.travelMode, Map]);
+  }, [placeNames, promptInfo.target, Map]);
+
+  useEffect(() => {
+    const update = async () => {
+      if (!Map || !markers || appState.mode !== "Result") return;
+      // setDirections(
+      //   await getDirections(
+      //     markers.map(
+      //       (marker) =>
+      //         ({ ...marker, directions: null } as MarkerWithDirections)
+      //     ),
+      //     originCoord,
+      //     0
+      //   )
+      // );
+    };
+    update();
+  }, [promptInfo.travelMode, appState.mode]);
 
   useEffect(() => {
     if (!Map) return;
@@ -239,6 +247,9 @@ const Map: React.FC<MapProps> = ({ placeNames, onMapLoaded }) => {
       mrk.setAnimation(
         idx === view.selected ? google.maps.Animation.BOUNCE : null
       );
+      if (idx === view.selected) {
+        Map.panTo(mrk.getPosition());
+      }
     });
     if (view.selected === null && mapBounds) Map.fitBounds(mapBounds);
   }, [Map, view.selected, markerRefs]);

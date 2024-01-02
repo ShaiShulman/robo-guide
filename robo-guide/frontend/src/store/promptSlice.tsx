@@ -13,7 +13,7 @@ const initialState: PromptSliceProps = {
   target: "",
   preference: "",
   origin: "",
-  travelMode: "Walking",
+  travelMode: "Driving",
 };
 
 export const PromptSlice = createSlice({

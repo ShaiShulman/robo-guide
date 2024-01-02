@@ -42,20 +42,25 @@
   flex-wrap: wrap;
   flex: 1 1 80px;
   list-style: none;
+  padding: 0;
 }
 
 .list-section ul li {
   width: 100%;
+  display: flex;
+  align-items: center;
+  position: relative;
+  margin-bottom: 20px;
+  height: auto;
 }
 
-/* Style for list items */
 .list-item {
   border: 2px solid lightblue;
   border-radius: 10px;
   display: flex;
   flex-direction: row;
   text-align: left;
-  margin-bottom: 20px;
+  margin-left: 35px;
   background-color: lightgray;
   width: 100%;
   cursor: pointer;
@@ -101,6 +106,19 @@
     brightness(89%) contrast(90%);
 }
 
+.list-item-bullet {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background-color: #007bff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: 2px solid #000000;
+  position: absolute;
+  top: 20px;
+}
+
 .corner-item {
   position: absolute;
   top: 0;
@@ -108,6 +126,9 @@
   padding: 10px;
 }
 
+.navbar-container {
+  z-index: 1000;
+}
 .item-title {
   font-size: 28px;
   text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
@@ -207,4 +228,9 @@ Form {
   .list-item-button_text {
     display: none;
   }
+}
+
+.navbar {
+  position: relative;
+  z-index: 1030;
 }

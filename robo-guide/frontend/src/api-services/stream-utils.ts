@@ -1,6 +1,7 @@
 export const getStreamedResponse = async (
   url: string,
   onNewValueRead: (line: string, value: string) => void,
+  onStreamEnd: () => void,
   signal?: AbortSignal
 ) => {
   const response = await fetch(url, {
@@ -14,21 +15,11 @@ export const getStreamedResponse = async (
   while (true) {
     const { value, done } = await reader.read();
     const decodedValue = decoder.decode(value, { stream: true });
-    if (done) break;
+    if (done) {
+      onStreamEnd();
+      break;
+    }
     line += decodedValue;
     onNewValueRead(line, decodedValue);
   }
-
-  // const reader = response
-  //   .body!.pipeThrough(new TextDecoderStream())
-  //   .getReader();
-  // console.log(reader);
-  // let line = "";
-  // while (true) {
-  //   const { value, done } = await reader.read();
-  //   console.log(value);
-  //   if (done) break;
-  //   line += value;
-  //   onNewValueRead(line, value);
-  // }
 };

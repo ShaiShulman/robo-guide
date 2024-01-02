@@ -11,6 +11,7 @@ import Error from "./components/Error";
 import getDispatch from "./lib/get-dispatch";
 import { appActions, selectAppState } from "./store/appSlice";
 import { getSuggestions } from "./api-services/suggestions";
+import OverlaySpinner from "./components/OverlaySpinner";
 
 function App() {
   const [places, setPlaces] = useState<string[]>([]);
@@ -19,28 +20,44 @@ function App() {
   const dispatch = getDispatch();
   const appState = useSelector(selectAppState);
 
-  let abortController: AbortController = null;
+  const [abortController, setAbortController] =
+    useState<AbortController | null>(null);
 
   useEffect(() => {
-    if (appState.mode === "Prompt" && abortController.signal)
+    if (
+      (appState.mode === "Prompt" || appState.mode === "Result") &&
+      abortController?.signal
+    ) {
       abortController.abort();
+    }
   }, [appState.mode]);
 
   const handleFormSubmitted = (prompt) => {
-    abortController = new AbortController();
+    const controller = new AbortController();
+    setAbortController(controller);
     setPlaces([]);
-    dispatch(appActions.setMode("Result"));
-    getSuggestions(
-      prompt.target,
-      prompt.preference,
-      (place) => setPlaces((curr) => [...curr, place]),
-      abortController.signal
-    );
+    dispatch(appActions.setMode("Loading"));
+
+    try {
+      getSuggestions(
+        prompt.target,
+        prompt.preference ?? null,
+        prompt.origin ?? null,
+        (place) => {
+          setPlaces((curr) => [...curr, place]);
+          dispatch(appActions.setMode("LoadingProgressive"));
+        },
+        () => {
+          dispatch(appActions.setMode("Result"));
+        },
+        controller.signal
+      );
+    } catch (error) {
+      dispatch(appActions.setMode("Error"));
+      dispatch(appActions.setError(error.message));
+    }
   };
-  const handleMapLoaded = (MapsApi: any) => {
-    setMapRef(MapsApi);
-    dispatch(appActions.setMode("Result"));
-  };
+  const handleMapLoaded = (MapsApi: any) => {};
 
   return (
     <>
@@ -54,10 +71,20 @@ function App() {
             {appState.mode === "Loading" && (
               <Spinner message="Beep boop\nThe robot is gathering suggestions..." />
             )}
+            {appState.mode === "LoadingProgressive" && (
+              <OverlaySpinner>
+                <div className="container">
+                  <List map={MapRef} />
+                  <div className="map-section">
+                    <Map placeNames={places} onMapLoaded={handleMapLoaded} />
+                  </div>
+                </div>
+              </OverlaySpinner>
+            )}
+
             {appState.mode === "Result" && (
               <div className="container">
                 <List map={MapRef} />
-
                 <div className="map-section">
                   <Map placeNames={places} onMapLoaded={handleMapLoaded} />
                 </div>

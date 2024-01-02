@@ -34,7 +34,8 @@ app.get(
     try {
       const target = req.query.target as string;
       const preference = req.query.preference as string | undefined;
-      const emitter = await getSuggestions(target, preference);
+      const origin = req.query.origin as string | undefined;
+      const emitter = await getSuggestions(target, preference, origin);
       const stream = new Readable({
         read() {},
       });
