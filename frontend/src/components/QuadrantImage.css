@@ -1,0 +1,32 @@
+.quadrant-image {
+  position: relative;
+  width: 100px;
+  height: 100px;
+}
+
+.quadrant {
+  position: absolute;
+  width: 50%;
+  height: 50%;
+  object-fit: cover;
+}
+
+.quadrant-0 {
+  top: 0;
+  left: 0;
+}
+
+.quadrant-1 {
+  top: 0;
+  right: 0;
+}
+
+.quadrant-2 {
+  bottom: 0;
+  left: 0;
+}
+
+.quadrant-3 {
+  bottom: 0;
+  right: 0;
+}

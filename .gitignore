@@ -5,3 +5,5 @@ aws
 awscliv2.zip
 robo-tourist/lambda/dist
 roboGuideKeyPair2.pem
+init-letsencrypt-roboguide.sh
+ubuntu@ec2-54-80-119-246.compute-1.amazonaws.com
