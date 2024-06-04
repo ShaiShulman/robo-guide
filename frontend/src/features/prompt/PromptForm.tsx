@@ -63,7 +63,7 @@ const PromptForm: React.FC<PromptFormProps> = (props) => {
             minLength={3}
             maxLength={30}
             required={true}
-            placeholder="Enter a name of a region, city or neighbourhood"
+            placeholder="Enter or select a name of a region, city or neighbourhood"
             restrictSearchRegions={true}
             onUpdate={(value) => setPrompt(value)}
           />
@@ -77,7 +77,7 @@ const PromptForm: React.FC<PromptFormProps> = (props) => {
             id="select-preference"
             labelKey="preferences"
             options={preferenceOptions}
-            placeholder="Enter or select the type of places you are looking for"
+            placeholder="Enter or select the type of places you are looking for (free text)"
             defaultSelected={[defaultPrompt.preference]}
             onChange={(selected: any) => {
               if (selected[0]) setPreference(selected[0].toString());
@@ -115,6 +115,8 @@ const PromptForm: React.FC<PromptFormProps> = (props) => {
         <div>
           <Button type="submit">Get Recommendations!</Button>
         </div>
+        <br />
+        <div>Beta version. For evaluation and testing purposes only.</div>
       </Form>
     </div>
   );
