@@ -7,7 +7,9 @@ export const getStreamedResponse = async (
   const response = await fetch(url, {
     signal,
   });
-  if (!response.ok) throw new Error("Error! bad response from server.");
+  if (response.status === 429) throw new Error("Error! Rate limit reached.");
+  if (!response.ok || response.status !== 200)
+    throw new Error("Error! bad response from server.");
 
   const reader = response.body!.getReader();
   const decoder = new TextDecoder();

@@ -2,7 +2,7 @@ const MAX_TARGET_LENGTH = 70;
 const MAX_PREF_LENGTH = 120;
 
 const INSTRUCTIONS =
-  "Give me 10 recommendations for places to visit and provide two paragarphs describing the place and why i should visit each one." +
+  "Give me 10 recommendations for places to visit and provide two paragarphs describing the place and why i should visit each one (do not seperate the description into multiple lines)." +
   "Put each place on a new line and separate the place name from the description with a colon. Don't use bullets or numbers, return only the list of recommendations.";
 
 export const getPrompt = (

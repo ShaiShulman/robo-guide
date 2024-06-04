@@ -1,4 +1,5 @@
 import express, { NextFunction } from "express";
+import * as dotenv from "dotenv";
 import cors from "cors";
 import { Request, Response } from "express";
 import { getSuggestions } from "./suggestions/openai";
@@ -7,9 +8,14 @@ import { jsonResponseMiddleware } from "./middleware/jsonResponseMiddleware";
 import { errorHandlerMiddleware } from "./middleware/errorHandlerMiddleware";
 import { Readable } from "stream";
 import { TEXT_COLOR } from "./const";
+import { getRateLimiter } from "./middleware/rateLimiter";
+
+if (process.env.NODE_ENV !== "production") dotenv.config();
 
 const app = express();
 const port = process.env.PORT || "8000";
+
+const rateLimit = getRateLimiter();
 
 app.use(cors());
 app.use(express.json());
@@ -30,6 +36,7 @@ app.get("/", async (req: Request, res: Response, next: NextFunction) => {
 
 app.get(
   "/api/suggestions",
+  rateLimit,
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const target = req.query.target as string;

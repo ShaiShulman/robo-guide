@@ -34,14 +34,14 @@ function App() {
     }
   }, [appState.mode]);
 
-  const handleFormSubmitted = (prompt) => {
+  const handleFormSubmitted = async (prompt) => {
     const controller = new AbortController();
     setAbortController(controller);
     setPlaces([]);
     dispatch(appActions.setMode("Loading"));
 
     try {
-      getSuggestions(
+      await getSuggestions(
         prompt.target,
         prompt.preference ?? null,
         prompt.origin ?? null,

@@ -25,19 +25,30 @@ const List: React.FC<ListProps> = ({ map }) => {
     [markers]
   );
 
+  const compareRoutes = (
+    a: { routeDuration?: any },
+    b: { routeDuration?: any }
+  ) => {
+    if ((a.routeDuration ?? 0) === 0 && (b.routeDuration ?? 0) !== 0) {
+      return 1;
+    }
+    if ((b.routeDuration ?? 0) === 0 && (a.routeDuration ?? 0) !== 0) {
+      return -1;
+    }
+    return (a.routeDuration ?? 0) - (b.routeDuration ?? 0);
+  };
+
   useEffect(() => {
     if (view.selected !== null)
       ensureElementVisible(refsMarkers[view.selected]);
   }, [view.selected]);
-
-  let sortedMarkers = [];
 
   return (
     <div className="list-section">
       <ul>
         {markers
           .map((m, i) => ({ ...m, index: i }))
-          .sort((a, b) => (a.routeDuration ?? 0) - (b.routeDuration ?? 0))
+          .sort(compareRoutes)
           .map((marker, idx) => (
             <li
               key={marker.index}

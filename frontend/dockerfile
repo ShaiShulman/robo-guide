@@ -6,7 +6,7 @@ WORKDIR /app
 COPY frontend/package.json frontend/package-lock.json ./
 
 # Install dependencies
-RUN npm ci
+RUN npm install --force
 
 # Copy the rest of the project files
 COPY frontend .
